@@ -3,6 +3,8 @@
 
 # Log file
 *.log
+*.tmp
+*.swp
 
 # BlueJ files
 *.ctxt
@@ -25,6 +27,29 @@ replay_pid*
 
 ### Intellij ####
 .idea/
+local.properties
+
 
 ### VS Code ###
 .vscode/
+
+### per il build ####
+build/
+app/build/
+
+*.iml
+*.ipr
+*.iws
+.gradle/
+.gradletasknamecache
+.idea/workspace.xml
+.idea/tasks.xml
+
+### file temp ###
+.DS_Store
+Thumbs.db
+
+### file app / debug ###
+*.apk
+*.ap_
+
