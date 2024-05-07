@@ -1,4 +1,4 @@
-package com.unipi.sleepmonitoring_masss_project
+package com.unipi.sleepmonitoringproject
 
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -19,6 +19,6 @@ class ExampleInstrumentedTest {
     fun useAppContext() {
         // Context of the app under test.
         val appContext = InstrumentationRegistry.getInstrumentation().targetContext
-        assertEquals("com.unipi.sleepmonitoring_masss_project", appContext.packageName)
+        assertEquals("com.unipi.sleepmonitoringproject", appContext.packageName)
     }
 }

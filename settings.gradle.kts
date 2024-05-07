@@ -19,5 +19,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "SleepMonitoring_MASSS_Project"
+rootProject.name = "Sleep Monitoring Project"
 include(":app")
+ 

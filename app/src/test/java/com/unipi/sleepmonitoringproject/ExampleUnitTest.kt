@@ -1,4 +1,4 @@
-package com.unipi.sleepmonitoring_masss_project
+package com.unipi.sleepmonitoringproject
 
 import org.junit.Test
 

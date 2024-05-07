@@ -1,14 +1,14 @@
 plugins {
-    alias(libs.plugins.androidApplication)
-    alias(libs.plugins.jetbrainsKotlinAndroid)
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.jetbrains.kotlin.android)
 }
 
 android {
-    namespace = "com.unipi.sleepmonitoring_masss_project"
+    namespace = "com.unipi.sleepmonitoringproject"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.unipi.sleepmonitoring_masss_project"
+        applicationId = "com.unipi.sleepmonitoringproject"
         minSdk = 24
         targetSdk = 34
         versionCode = 1

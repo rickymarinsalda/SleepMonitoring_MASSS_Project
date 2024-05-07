@@ -1,4 +1,4 @@
-package com.unipi.sleepmonitoring_masss_project.ui.home
+package com.unipi.sleepmonitoringproject.ui.home
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
