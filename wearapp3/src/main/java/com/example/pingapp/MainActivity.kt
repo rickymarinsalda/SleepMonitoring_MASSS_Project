@@ -7,13 +7,17 @@
 package com.example.pingapp
 
 import android.annotation.SuppressLint
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import androidx.compose.runtime.Composable
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.lifecycleScope
 import com.example.pingapp.presentation.MainApp
@@ -25,12 +29,23 @@ import kotlinx.coroutines.launch
 import java.time.Instant
 
 @SuppressLint("RestrictedApi")
-class MainActivity : ComponentActivity() {
+class MainActivity : ComponentActivity(), SensorEventListener {
     private val dataClient by lazy { Wearable.getDataClient(this) }
     private val messageClient by lazy { Wearable.getMessageClient(this) }
     private val capabilityClient by lazy { Wearable.getCapabilityClient(this) }
 
     private val clientDataViewModel by viewModels<ClientDataViewModel>()
+
+    private val sensorManager: SensorManager by lazy {getSystemService(SENSOR_SERVICE) as SensorManager}
+
+    private var started: Boolean = false
+    private var session_start_time = 0L
+
+    private var lastHeart = 0.0f
+    private var lastAccel: FloatArray = floatArrayOf(0.0f, 0.0f, 0.0f)
+
+    private var heartTimeSeries = TimeSeries()
+    private var accelTimeSeries = TimeSeries()
 
     override fun onResume() {
         super.onResume()
@@ -59,7 +74,47 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             MainApp(
-                onPingClicked = ::onPingClicked
+                onPingClicked = ::onPingClicked,
+                onSendClicked = ::onSendClicked,
+                onStartStopClicked = ::onStartStopClicked,
+                started = started
+            )
+        }
+    }
+
+    private fun onStartStopClicked() {
+        started = !started
+        if(started)
+        {
+            val sensorHeartRate = sensorManager.getDefaultSensor(Sensor.TYPE_HEART_RATE);
+            val sensorAccelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+
+            val successHeart = sensorManager.registerListener(this, sensorHeartRate, SensorManager.SENSOR_DELAY_NORMAL)
+            Log.i(TAG, "successHeart=$successHeart")
+
+            val successAcc = sensorManager.registerListener(this, sensorAccelerometer, SensorManager.SENSOR_DELAY_NORMAL)
+            Log.i(TAG, "successAccel=$successAcc")
+
+            Log.i(TAG, "starting session....")
+            session_start_time = System.currentTimeMillis()
+
+            // Clearing old session
+            heartTimeSeries = TimeSeries()
+            accelTimeSeries = TimeSeries()
+
+        } else {
+            Log.i(TAG, "stopping session....")
+            sensorManager.unregisterListener(this)
+        }
+
+        setContent {
+            MainApp(
+                onPingClicked = ::onPingClicked,
+                onSendClicked = ::onSendClicked,
+                onStartStopClicked = ::onStartStopClicked,
+                started = started,
+                value_bpm = lastHeart,
+                value_acc = lastAccel
             )
         }
     }
@@ -86,6 +141,62 @@ class MainActivity : ComponentActivity() {
                 Log.d(TAG, "Saving DataItem failed: $exception")
             }
         }
+    }
+
+    @SuppressLint("VisibleForTests")
+    private fun onSendClicked() {
+        if(started || session_start_time == 0L) {
+            Toast.makeText(applicationContext, "PROIBITO INVIARE SESSIONE DURANTE SESSIONE IN CORSO!", 5).show()
+            return
+        }
+
+        lifecycleScope.launch {
+            try {
+                val request = PutDataMapRequest.create("/ping-pong").apply {
+                    dataMap.putLong("start", session_start_time)
+                    dataMap.putDataMap("data_heart", heartTimeSeries.serializeToGoogle())
+                    dataMap.putDataMap("data_accel", accelTimeSeries.serializeToGoogle())
+                }
+                    .asPutDataRequest()
+                    .setUrgent()
+
+                val result = dataClient.putDataItem(request)
+
+                Log.d(TAG, "DataItem saved: $result")
+            } catch (cancellationException: CancellationException) {
+                throw cancellationException
+            } catch (exception: Exception) {
+                Log.d(TAG, "Saving DataItem failed: $exception")
+            }
+        }
+    }
+
+    override fun onSensorChanged(event: SensorEvent?) {
+        if(event == null)
+            return
+
+        if(event.sensor.type == Sensor.TYPE_HEART_RATE) {
+            lastHeart = event.values[0]
+            heartTimeSeries.add(floatArrayOf(lastHeart), event.timestamp)
+        } else if (event.sensor.type == Sensor.TYPE_ACCELEROMETER) {
+            lastAccel = event.values
+            accelTimeSeries.add(lastAccel, event.timestamp)
+        }
+
+        setContent {
+            MainApp(
+                onPingClicked = ::onPingClicked,
+                onSendClicked = ::onSendClicked,
+                onStartStopClicked = ::onStartStopClicked,
+                started = started,
+                value_bpm = lastHeart,
+                value_acc = lastAccel
+            )
+        }
+    }
+
+    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
+        //TODO("Not yet implemented")
     }
 
     companion object {
