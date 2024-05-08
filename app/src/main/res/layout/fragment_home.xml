@@ -5,4 +5,10 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".ui.home.HomeFragment">
+
+    <include
+        android:id="@+id/sleep_line_chart"
+        layout="@layout/stats"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>
