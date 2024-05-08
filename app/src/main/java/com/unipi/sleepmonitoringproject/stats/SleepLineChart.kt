@@ -97,7 +97,7 @@ class SleepLineChart(rootView: View) {
             lineChart.axisLeft.textColor = Color.WHITE
             lineChart.setViewPortOffsets(150F, 50F, 100F, 100F)
 
-            lineChart.setDrawBorders(false);
+            lineChart.setDrawBorders(false)
         }
     }
 
