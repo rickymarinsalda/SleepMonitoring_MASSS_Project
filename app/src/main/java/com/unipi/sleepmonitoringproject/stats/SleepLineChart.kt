@@ -24,7 +24,7 @@ class SleepLineChart(private val rootView: View) {
         val data: LineData = getData()
         data.setValueTypeface(mTf)
 
-        setupChart(lineChart, data, Color.argb(255, 0, 0, 128));
+        setupChart(lineChart, data, Color.argb(9, 32, 84, 1));
     }
 
     private fun setupChart(lineChart: LineChart?, data: LineData, color: Int) {
@@ -115,6 +115,8 @@ class SleepLineChart(private val rootView: View) {
         set1.color = Color.WHITE
         set1.highLightColor = Color.WHITE
         set1.setDrawValues(false)
+        set1.setDrawFilled(true)
+        set1.fillColor = Color.rgb(83, 99, 135)
         set1.mode = LineDataSet.Mode.CUBIC_BEZIER
 
         return LineData(set1)
