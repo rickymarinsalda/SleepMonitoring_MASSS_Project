@@ -14,7 +14,7 @@ import com.github.mikephil.charting.formatter.ValueFormatter
 import com.unipi.sleepmonitoringproject.R
 import java.text.SimpleDateFormat
 
-class SleepLineChart(private val rootView: View) {
+class SleepLineChart(rootView: View) {
 
     private val lineChart: LineChart = rootView.findViewById(R.id.line_chart)
 
@@ -24,11 +24,11 @@ class SleepLineChart(private val rootView: View) {
         val data: LineData = getData()
         data.setValueTypeface(mTf)
 
-        setupChart(lineChart, data, Color.argb(255, 0, 0, 128));
+        setupChart(lineChart, data, Color.argb(9, 32, 84, 1))
     }
 
     private fun setupChart(lineChart: LineChart?, data: LineData, color: Int) {
-        val dataSet: LineDataSet = data.getDataSetByIndex(0) as LineDataSet
+        data.getDataSetByIndex(0) as LineDataSet
 
         if (lineChart != null) {
 
@@ -54,7 +54,7 @@ class SleepLineChart(private val rootView: View) {
             lineChart.data = data
 
             // Get and handle the legend
-            var legend: Legend = lineChart.legend
+            val legend: Legend = lineChart.legend
             legend.isEnabled = true
             legend.textColor = Color.WHITE
 
@@ -95,9 +95,9 @@ class SleepLineChart(private val rootView: View) {
 
             lineChart.xAxis.textColor = Color.WHITE
             lineChart.axisLeft.textColor = Color.WHITE
-            lineChart.setViewPortOffsets(150F, 50F, 100F, 100F);
+            lineChart.setViewPortOffsets(150F, 50F, 100F, 100F)
 
-            lineChart.setDrawBorders(false);
+            lineChart.setDrawBorders(false)
         }
     }
 
@@ -115,6 +115,8 @@ class SleepLineChart(private val rootView: View) {
         set1.color = Color.WHITE
         set1.highLightColor = Color.WHITE
         set1.setDrawValues(false)
+        set1.setDrawFilled(true)
+        set1.fillColor = Color.rgb(83, 99, 135)
         set1.mode = LineDataSet.Mode.CUBIC_BEZIER
 
         return LineData(set1)
@@ -131,7 +133,7 @@ class SleepLineChart(private val rootView: View) {
 
         val sleepPhaseDuration = 30 * 60 * 1000 // 30 minuti
 
-        var currentTime = startTime.clone() as Calendar
+        val currentTime = startTime.clone() as Calendar
         while (currentTime.before(endTime)) {
             val timestamp = currentTime.timeInMillis
 
@@ -141,7 +143,7 @@ class SleepLineChart(private val rootView: View) {
             // Aggiunta dei dati all'elenco di valori con etichetta
             val fTimestamp = timestamp.toFloat()
             val fSleepType = sleepType.toFloat()
-            val newEntry : Entry = Entry(fTimestamp, fSleepType)
+            val newEntry = Entry(fTimestamp, fSleepType)
             println(newEntry)
             values.add(newEntry)
 
