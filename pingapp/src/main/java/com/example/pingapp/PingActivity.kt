@@ -8,17 +8,24 @@ import android.widget.TableRow
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
 import com.example.pingapp.ui.theme.SleepMonitoring_MASSS_ProjectTheme
 import com.google.android.gms.wearable.CapabilityClient
@@ -26,6 +33,7 @@ import com.google.android.gms.wearable.PutDataMapRequest
 import com.google.android.gms.wearable.Wearable
 import com.unipi.sleepmonitoring_masss_library.TimeSeries
 import kotlinx.coroutines.*
+import java.text.SimpleDateFormat
 import java.time.Instant
 
 class PingActivity : ComponentActivity() {
@@ -109,8 +117,48 @@ fun PingView(
 }
 
 @Composable
+fun RowScope.TableCell(
+    text: String,
+    weight: Float
+) {
+    Text(
+        text = text,
+        Modifier
+            .border(1.dp, Color.Black)
+            .weight(weight)
+            .padding(8.dp)
+    )
+}
+
+
+@Composable
 fun TimeSeriesView(series: TimeSeries) {
-    Text(text = "bussy")
+    // Each cell of a column must have the same weight.
+    val column1Weight = .55f // 30%
+    val column2Weight = 1 - column1Weight // 70%
+    // The LazyColumn will be our table. Notice the use of the weights below
+    LazyColumn(Modifier.fillMaxSize().padding(16.dp)) {
+        // Here is the header
+        item {
+            Row(Modifier.background(Color.Gray)) {
+                TableCell(text = "Timestamp", weight = column1Weight)
+                TableCell(text = "Data", weight = column2Weight)
+            }
+        }
+        // Here are all the lines of your table.
+        items(series.data) {
+            Row(Modifier.fillMaxWidth()) {
+                TableCell(
+                    text = SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(it.timestamp),
+                    weight = column1Weight
+                )
+                TableCell(
+                    text = it.datum.joinToString { it.toString() },
+                    weight = column2Weight
+                )
+            }
+        }
+    }
 }
 
 @Composable
@@ -123,10 +171,16 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
 
 @Preview(showBackground = true)
 @Composable
-fun GreetingPreview() {
+fun PreviewFull() {
     val original = TimeSeries()
     for (i in 0..100)
-        original.add(floatArrayOf(i*1.0f, i*2.0f, i*-3.0f), i * 1000L)
+        original.add(floatArrayOf(i*1.0f, i*2.0f, i*-3.0f), i * 1000L * 30L)
 
     PingView(series = original)
+}
+
+@Preview(showBackground = true)
+@Composable
+fun PreviewEmpty() {
+    PingView()
 }

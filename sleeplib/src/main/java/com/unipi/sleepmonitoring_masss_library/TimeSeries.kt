@@ -27,7 +27,7 @@ class TimeSeries {
         }
     }
 
-    private var data = mutableListOf<Datum>()
+    public var data = mutableListOf<Datum>()
 
     fun add(value: FloatArray, timestamp: Long = System.currentTimeMillis()) {
         data.add(Datum(timestamp, value))
