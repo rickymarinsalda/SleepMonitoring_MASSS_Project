@@ -63,9 +63,17 @@ class PingActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        clientDataViewModel.updateGUI = ::onNewTimeSeries
         //enableEdgeToEdge()
         setContent {
             PingView(onPongClick = ::onPongClick)
+        }
+    }
+
+    private fun onNewTimeSeries(series: TimeSeries) {
+        setContent {
+            PingView(onPongClick = ::onPongClick, series = series)
         }
     }
 

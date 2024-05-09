@@ -172,16 +172,22 @@ class MainActivity : ComponentActivity(), SensorEventListener {
         }
     }
 
+    var lastAccelSample = 0L
+
     override fun onSensorChanged(event: SensorEvent?) {
         if(event == null)
             return
 
         if(event.sensor.type == Sensor.TYPE_HEART_RATE) {
             lastHeart = event.values[0]
-            heartTimeSeries.add(floatArrayOf(lastHeart), event.timestamp)
+            heartTimeSeries.add(floatArrayOf(lastHeart))
         } else if (event.sensor.type == Sensor.TYPE_ACCELEROMETER) {
+            if (event.timestamp - lastAccelSample <= 1e9)
+                return
+
+            lastAccelSample = event.timestamp
             lastAccel = event.values
-            accelTimeSeries.add(lastAccel, event.timestamp)
+            accelTimeSeries.add(lastAccel)
         }
 
         setContent {
