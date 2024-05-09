@@ -7,8 +7,6 @@ class TimeSeries {
     class Datum(
         val timestamp: Long,
         val datum: FloatArray
-
-
     ) {
         override fun equals(other: Any?): Boolean {
             if (this === other) return true
@@ -20,6 +18,12 @@ class TimeSeries {
             if (!datum.contentEquals(other.datum)) return false
 
             return true
+        }
+
+        override fun hashCode(): Int {
+            var result = timestamp.hashCode()
+            result = 31 * result + datum.contentHashCode()
+            return result
         }
     }
 
