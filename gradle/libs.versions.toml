@@ -54,4 +54,5 @@ androidx-activity-ktx = { group = "androidx.activity", name = "activity-ktx", ve
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
 jetbrainsKotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+androidLibrary = { id = "com.android.library", version.ref = "agp" }
 

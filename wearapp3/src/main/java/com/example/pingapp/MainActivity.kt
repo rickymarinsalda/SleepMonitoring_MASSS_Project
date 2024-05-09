@@ -24,6 +24,7 @@ import com.example.pingapp.presentation.MainApp
 import com.google.android.gms.wearable.CapabilityClient
 import com.google.android.gms.wearable.PutDataMapRequest
 import com.google.android.gms.wearable.Wearable
+import com.unipi.sleepmonitoring_masss_library.TimeSeries
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 import java.time.Instant
@@ -146,7 +147,7 @@ class MainActivity : ComponentActivity(), SensorEventListener {
     @SuppressLint("VisibleForTests")
     private fun onSendClicked() {
         if(started || session_start_time == 0L) {
-            Toast.makeText(applicationContext, "PROIBITO INVIARE SESSIONE DURANTE SESSIONE IN CORSO!", 5).show()
+            Toast.makeText(applicationContext, "PROIBITO INVIARE SESSIONE DURANTE SESSIONE IN CORSO!", Toast.LENGTH_SHORT).show()
             return
         }
 

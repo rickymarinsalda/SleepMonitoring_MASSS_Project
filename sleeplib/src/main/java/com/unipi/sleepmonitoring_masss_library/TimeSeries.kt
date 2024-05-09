@@ -1,4 +1,4 @@
-package com.example.pingapp
+package com.unipi.sleepmonitoring_masss_library
 
 import android.annotation.SuppressLint
 import com.google.android.gms.wearable.DataMap

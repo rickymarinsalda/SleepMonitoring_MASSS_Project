@@ -3,6 +3,8 @@ package com.example.pingapp
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
+import android.widget.TableLayout
+import android.widget.TableRow
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -22,6 +24,7 @@ import com.example.pingapp.ui.theme.SleepMonitoring_MASSS_ProjectTheme
 import com.google.android.gms.wearable.CapabilityClient
 import com.google.android.gms.wearable.PutDataMapRequest
 import com.google.android.gms.wearable.Wearable
+import com.unipi.sleepmonitoring_masss_library.TimeSeries
 import kotlinx.coroutines.*
 import java.time.Instant
 
@@ -86,7 +89,8 @@ class PingActivity : ComponentActivity() {
 
 @Composable
 fun PingView(
-    onPongClick: () -> Unit = {}
+    onPongClick: () -> Unit = {},
+    series: TimeSeries = TimeSeries()
 ) {
     SleepMonitoring_MASSS_ProjectTheme {
         Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
@@ -98,11 +102,15 @@ fun PingView(
                         name = "Android",
                 modifier = Modifier.padding(innerPadding)
                 )
+                TimeSeriesView(series = series)
             }
-
-
         }
     }
+}
+
+@Composable
+fun TimeSeriesView(series: TimeSeries) {
+    Text(text = "bussy")
 }
 
 @Composable
@@ -116,5 +124,9 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
 @Preview(showBackground = true)
 @Composable
 fun GreetingPreview() {
-    PingView()
+    val original = TimeSeries()
+    for (i in 0..100)
+        original.add(floatArrayOf(i*1.0f, i*2.0f, i*-3.0f), i * 1000L)
+
+    PingView(series = original)
 }

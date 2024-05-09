@@ -1,4 +1,4 @@
-package com.example.pingapp
+package com.unipi.sleepmonitoring_masss_library
 
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
