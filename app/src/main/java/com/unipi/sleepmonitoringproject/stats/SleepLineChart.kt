@@ -16,9 +16,11 @@ import java.text.SimpleDateFormat
 
 class SleepLineChart(rootView: View) {
 
+    val id: Int = R.id.line_chart
     private val lineChart: LineChart = rootView.findViewById(R.id.line_chart)
 
     init {
+
         val mTf: Typeface = Typeface.DEFAULT
 
         val data: LineData = getData()
