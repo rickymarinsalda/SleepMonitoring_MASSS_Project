@@ -1,13 +1,13 @@
 package com.unipi.sleepmonitoringproject.ui.stats
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
 import com.unipi.sleepmonitoringproject.databinding.FragmentStatsBinding
+import com.unipi.sleepmonitoringproject.stats.SleepBarChart
 
 class StatsFragment : Fragment() {
 
@@ -22,16 +22,19 @@ class StatsFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        val galleryViewModel =
-            ViewModelProvider(this).get(StatsViewModel::class.java)
+        //val galleryViewModel =
+        //    ViewModelProvider(this).get(StatsViewModel::class.java)
 
         _binding = FragmentStatsBinding.inflate(inflater, container, false)
+
         val root: View = binding.root
 
-        val textView: TextView = binding.textGallery
-        galleryViewModel.text.observe(viewLifecycleOwner) {
-            textView.text = it
-        }
+        Log.d("DEBUG", "root -> $root")
+
+        val barChart = SleepBarChart(context, null)
+
+        binding.root.addView(barChart)
+
         return root
     }
 
