@@ -2,4 +2,7 @@
 <resources>
     <item type="id" name="lastNightTitle" />
     <item name="currentDateTextView" type="id" />
+    <item name="totTimeTextView" type="id" />
+    <item name="totTimeNumberTextView" type="id" />
+    <item name="pillowsIcon" type="id" />
 </resources>

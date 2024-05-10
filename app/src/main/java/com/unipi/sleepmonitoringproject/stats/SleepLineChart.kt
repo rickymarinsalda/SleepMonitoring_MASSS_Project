@@ -19,6 +19,9 @@ class SleepLineChart(rootView: View) {
     val id: Int = R.id.line_chart
     private val lineChart: LineChart = rootView.findViewById(R.id.line_chart)
 
+    private lateinit var startTime : Calendar
+    private lateinit var endTime : Calendar
+
     init {
 
         val mTf: Typeface = Typeface.DEFAULT
@@ -126,9 +129,9 @@ class SleepLineChart(rootView: View) {
 
     fun generateFullNightData(): ArrayList<Entry> {
         val values = ArrayList<Entry>()
-        val startTime = Calendar.getInstance()
+        startTime = Calendar.getInstance()
         startTime.set(2024, Calendar.MAY, 7, 22, 0) // Data e ora di inizio del sonno
-        val endTime = Calendar.getInstance()
+        endTime = Calendar.getInstance()
         endTime.set(2024, Calendar.MAY, 8, 6, 0) // Data e ora di fine del sonno
 
         val random = Random()
@@ -153,6 +156,14 @@ class SleepLineChart(rootView: View) {
             currentTime.timeInMillis += sleepPhaseDuration
         }
         return values
+    }
+
+    fun getStartTime() : Calendar {
+        return startTime
+    }
+
+    fun getEndTime() : Calendar {
+        return endTime
     }
 }
 

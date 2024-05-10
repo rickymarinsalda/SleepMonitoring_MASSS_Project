@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.annotation.RequiresApi
 import androidx.constraintlayout.widget.ConstraintLayout
@@ -120,15 +121,40 @@ class HomeFragment : Fragment() {
             constraintSet.setVerticalBias(currentDateTextView.id, 0.4f)
             constraintSet.applyTo(constraintLayout)
 
-            showDataFromLastNight(lineChart)
+            //showDataFromLastNight(root, lineChart)
         }
 
         // Se non ho registrato:
         // Testo "Inizia a registrare"
     }
 
-    private fun showDataFromLastNight(lineChart: SleepLineChart) {
+    private fun showDataFromLastNight(root: View, lineChart: SleepLineChart) {
+        //Da completare con la parte su SleepLineChart.kt e testare
 
+        // Calculate the total time slept
+        val startTime = lineChart.getStartTime().timeInMillis
+        val endTime = lineChart.getEndTime().timeInMillis
+        var totTime = (endTime - startTime)/3600
+
+        // Show the total time slept
+        var totTimeTextView = TextView(context)
+        totTimeTextView.id = R.id.totTimeTextView
+        totTimeTextView.text = "Time in bed:"
+        totTimeTextView.textAlignment = TextView.TEXT_ALIGNMENT_CENTER
+        totTimeTextView.setTextColor(Color.rgb(174, 193, 232))
+        totTimeTextView.textSize = 10f
+        totTimeTextView.setTypeface(null, Typeface.BOLD)
+        val customFont = ResourcesCompat.getFont(requireContext(), R.font.source_serif_pro)
+        customFont?.let {
+            totTimeTextView.typeface = it
+        }
+
+        var totTimeNumberTextView = TextView(context)
+        totTimeNumberTextView.id = R.id.totTimeNumberTextView
+        totTimeNumberTextView.text = totTime.toString()
+
+        val imageView: ImageView = root.findViewById(R.id.pillowsIcon)
+        imageView.setImageResource(R.drawable.pillow)
     }
 
     override fun onDestroyView() {
