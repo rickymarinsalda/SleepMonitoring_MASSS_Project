@@ -1,6 +1,5 @@
 package com.unipi.sleepmonitoringproject.ui.home
 
-import android.app.ActionBar
 import android.graphics.Color
 import android.graphics.Typeface
 import android.os.Build
@@ -15,7 +14,6 @@ import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
-import com.github.mikephil.charting.charts.LineChart
 import com.unipi.sleepmonitoringproject.R
 import com.unipi.sleepmonitoringproject.databinding.FragmentHomeBinding
 import com.unipi.sleepmonitoringproject.stats.SleepLineChart
