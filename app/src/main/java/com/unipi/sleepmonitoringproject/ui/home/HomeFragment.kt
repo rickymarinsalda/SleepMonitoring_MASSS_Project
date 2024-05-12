@@ -1,5 +1,7 @@
 package com.unipi.sleepmonitoringproject.ui.home
 
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
 import android.graphics.Color
 import android.graphics.Typeface
 import android.os.Build
@@ -21,6 +23,9 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import android.animation.ValueAnimator
 import android.widget.LinearLayout
+import androidx.core.animation.doOnEnd
+import java.util.LinkedList
+import kotlin.math.roundToInt
 
 class HomeFragment : Fragment() {
 
@@ -33,6 +38,8 @@ class HomeFragment : Fragment() {
     private var dataAvailable: Boolean = true
 
     private lateinit var root: View
+
+    private var animationQueue: LinkedList<TextView> = LinkedList()
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreateView(
@@ -130,28 +137,66 @@ class HomeFragment : Fragment() {
 
     private fun showDataFromLastNight(lineChart: SleepLineChart) {
         val horizontalView: LinearLayout = root.findViewById(R.id.data_list)
+        val textViewsToAnimate = mutableListOf<TextView>()
 
         /* Total time in bed */
-        // Calculate the total time slept
         val startTime = lineChart.getStartTime().timeInMillis
         val endTime = lineChart.getEndTime().timeInMillis
         val totTime = (endTime - startTime)/3600000.0
-
         val totTimeTextView = createSleepDataElem(totTime, R.string.time_in_bed)
-
         horizontalView.addView(totTimeTextView)
+        textViewsToAnimate.add(totTimeTextView)
 
         /* Time to fall asleep */
+        val startTimeAsleep = lineChart.getStartTimeAsleep()
+        val differenceInMillis = startTimeAsleep - startTime
+        val totTimeToFallAsleep = ((differenceInMillis / (1000.0 * 60.0)) * 10.0).roundToInt() / 10.0
+        val timeToFallAsleepTextView = createSleepDataElem(totTimeToFallAsleep, R.string.time_to_fall_asleep)
+        horizontalView.addView(timeToFallAsleepTextView)
+        textViewsToAnimate.add(timeToFallAsleepTextView)
 
         /* Total time in deep sleep */
+        val deepSleepTot = lineChart.getDeepSleepTotal()
+        val deepSleepTotTextView = createSleepDataElem(deepSleepTot, R.string.deep_sleep_tot)
+        horizontalView.addView(deepSleepTotTextView)
+        textViewsToAnimate.add(deepSleepTotTextView)
 
         /* Total time in light sleep */
+        val lightSleepTot = lineChart.getLightSleepTotal()
+        val lightSleepTotTextView = createSleepDataElem(lightSleepTot, R.string.light_sleep_tot)
+        horizontalView.addView(lightSleepTotTextView)
+        textViewsToAnimate.add(lightSleepTotTextView)
 
         /* Total time in REM phase */
+        val remSleepTot = lineChart.getRemSleepTotal()
+        val remSleepTotTextView = createSleepDataElem(remSleepTot, R.string.rem_phase_tot)
+        horizontalView.addView(remSleepTotTextView)
+        textViewsToAnimate.add(remSleepTotTextView)
 
         /* Total time awake */
+        val awakeTime = lineChart.getAwakeTotal()
+        val awakeTimeTextView = createSleepDataElem(awakeTime, R.string.awake_tot)
+        horizontalView.addView(awakeTimeTextView)
+        textViewsToAnimate.add(awakeTimeTextView)
 
         /* Overall quality */
+        val quality = (deepSleepTot + lightSleepTot + remSleepTot) / totTime // TODO To understand how to calculate the quality
+        val qualityTextView = createSleepDataElem(quality, R.string.quality)
+        horizontalView.addView(qualityTextView)
+        textViewsToAnimate.add(qualityTextView)
+        /*val qualityView: LinearLayout = root.findViewById(R.id.quality_layout)
+        qualityView.addView(qualityTextView)*/
+
+        /* Start showing data */
+        animationQueue.add(totTimeTextView)
+        animationQueue.add(timeToFallAsleepTextView)
+        animationQueue.add(deepSleepTotTextView)
+        animationQueue.add(lightSleepTotTextView)
+        animationQueue.add(remSleepTotTextView)
+        animationQueue.add(awakeTimeTextView)
+        animationQueue.add(qualityTextView)
+
+        startAnimationSequence()
     }
 
     private fun createSleepDataElem(numericData: Double, stringType: Int): TextView {
@@ -161,22 +206,26 @@ class HomeFragment : Fragment() {
         sleepDataElem.text = formattedText
         sleepDataElem.textAlignment = TextView.TEXT_ALIGNMENT_TEXT_START
         sleepDataElem.setTextColor(Color.rgb(174, 193, 232))
-        sleepDataElem.textSize = 20f
+        sleepDataElem.textSize = 23f
+        sleepDataElem.visibility = View.INVISIBLE
 
         val padding = resources.getDimensionPixelSize(R.dimen.activity_horizontal_margin)
         sleepDataElem.setPaddingRelative(padding, sleepDataElem.paddingTop, sleepDataElem.paddingEnd, sleepDataElem.paddingBottom)
+        if(stringType == R.string.quality) {
+            val paddingTop = resources.getDimensionPixelSize(R.dimen.activity_vertical_margin)
+            sleepDataElem.setPadding(sleepDataElem.paddingLeft, paddingTop, sleepDataElem.paddingRight, sleepDataElem.paddingBottom)
+        }
 
         val customFont = ResourcesCompat.getFont(requireContext(), R.font.source_code_pro)
         customFont?.let {
             sleepDataElem.typeface = it
         }
-        applyAnimation(sleepDataElem)
 
         return sleepDataElem
     }
 
-    private fun applyAnimation(textToAnimate: TextView) {
-        val animationDuration = 150
+    private fun applyAnimation(textToAnimate: TextView, onAnimationEnd: () -> Unit) {
+        val animationDuration = 25
 
         val textToType = textToAnimate.text
         val animator = ValueAnimator.ofInt(0, textToType.length)
@@ -186,7 +235,30 @@ class HomeFragment : Fragment() {
             val animatedText = if (progress >= textToType.length) textToType else textToType.substring(0, progress + 1)
             textToAnimate.text = animatedText
         }
+        animator.addListener(object : AnimatorListenerAdapter() {
+            override fun onAnimationStart(animation: Animator) {
+                textToAnimate.visibility = View.VISIBLE
+            }
+        })
         animator.start()
+
+        // Call onAnimationEnd() after the animation is finished
+        animator.doOnEnd {
+            onAnimationEnd()
+        }
+    }
+
+    private fun startAnimationSequence() {
+        animationQueue.let { queue ->
+            if (queue.isNotEmpty()) {
+                val textView = queue.poll()
+                if (textView != null) {
+                    applyAnimation(textView) {
+                        startAnimationSequence()
+                    }
+                }
+            }
+        }
     }
 
     override fun onDestroyView() {
