@@ -10,4 +10,8 @@
     <string name="menu_home">Home</string>
     <string name="menu_stats">Stats</string>
     <string name="menu_slideshow">Slideshow</string>
+
+    <string name="home_title_after_rec">Your last night of sleep</string>
+    <string name="time_in_bed">Time in bed: %.1f hours</string>
+    <string name="data_title">Data</string>
 </resources>

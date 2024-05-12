@@ -7,7 +7,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
 import android.widget.TextView
 import androidx.annotation.RequiresApi
 import androidx.constraintlayout.widget.ConstraintLayout
@@ -20,6 +19,8 @@ import com.unipi.sleepmonitoringproject.databinding.FragmentHomeBinding
 import com.unipi.sleepmonitoringproject.stats.SleepLineChart
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import android.animation.ValueAnimator
+import android.widget.LinearLayout
 
 class HomeFragment : Fragment() {
 
@@ -31,6 +32,8 @@ class HomeFragment : Fragment() {
 
     private var dataAvailable: Boolean = true
 
+    private lateinit var root: View
+
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -40,33 +43,30 @@ class HomeFragment : Fragment() {
         ViewModelProvider(this).get(HomeViewModel::class.java)
 
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
-        val root: View = binding.root
+        root = binding.root
 
-        showLastNight(root)
+        showLastNight()
 
         return root
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    private fun showLastNight(root: View) {
-        // Prendo la box del line chart
+    private fun showLastNight() {
         val constraintLayout: ConstraintLayout = root.findViewById(R.id.chart_parent)
 
-        // Se ho registrato:
-        // Metto titolo e sottotitolo
+        /* If the user collected some data */
         if(dataAvailable) {
 
             /* Creation of the title */
             val lastNightTitle = TextView(context)
             lastNightTitle.id = R.id.lastNightTitle
-            lastNightTitle.text = "Your last night of sleep"
+            lastNightTitle.text = getString(R.string.home_title_after_rec)
             lastNightTitle.textAlignment = TextView.TEXT_ALIGNMENT_CENTER
             lastNightTitle.setTextColor(Color.rgb(174, 193, 232))
             lastNightTitle.textSize = 24f
             lastNightTitle.setTypeface(null, Typeface.BOLD)
 
-            val customFont = ResourcesCompat.getFont(requireContext(), R.font.source_serif_pro)
-            // Impostazione del font sulla TextView
+            val customFont = ResourcesCompat.getFont(requireContext(), R.font.source_code_pro)
             customFont?.let {
                 lastNightTitle.typeface = it
             }
@@ -77,7 +77,7 @@ class HomeFragment : Fragment() {
             val currentDateTextView = TextView(context)
             currentDateTextView.id = R.id.currentDateTextView
             val currentDate = LocalDate.now()
-            val formatter = DateTimeFormatter.ofPattern("dd MMMM yyyy") // Formato della data desiderato
+            val formatter = DateTimeFormatter.ofPattern("dd MMMM yyyy")
             val currentDateText = currentDate.format(formatter)
             currentDateTextView.text = currentDateText
             currentDateTextView.textAlignment = TextView.TEXT_ALIGNMENT_CENTER
@@ -89,13 +89,9 @@ class HomeFragment : Fragment() {
                 currentDateTextView.typeface = it
             }
 
-            // Aggiungo il TextView per la data corrente al ConstraintLayout
             constraintLayout.addView(currentDateTextView)
 
-            // Creo il line chart
-            val lineChart = SleepLineChart(root)
-
-            // Imposto i vincoli per il titolo
+            /* Apply the constraint set to title and date TextViews */
             val lastNightTitleLayoutParams = lastNightTitle.layoutParams as ConstraintLayout.LayoutParams
             lastNightTitleLayoutParams.width = ConstraintLayout.LayoutParams.WRAP_CONTENT
             lastNightTitleLayoutParams.height = ConstraintLayout.LayoutParams.WRAP_CONTENT
@@ -121,40 +117,76 @@ class HomeFragment : Fragment() {
             constraintSet.setVerticalBias(currentDateTextView.id, 0.4f)
             constraintSet.applyTo(constraintLayout)
 
-            //showDataFromLastNight(root, lineChart)
+            /* Creation of the sleep line chart */
+            val lineChart = SleepLineChart(root)
+
+            showDataFromLastNight(lineChart)
         }
 
+        // TODO
         // Se non ho registrato:
         // Testo "Inizia a registrare"
     }
 
-    private fun showDataFromLastNight(root: View, lineChart: SleepLineChart) {
-        //Da completare con la parte su SleepLineChart.kt e testare
+    private fun showDataFromLastNight(lineChart: SleepLineChart) {
+        val horizontalView: LinearLayout = root.findViewById(R.id.data_list)
 
+        /* Total time in bed */
         // Calculate the total time slept
         val startTime = lineChart.getStartTime().timeInMillis
         val endTime = lineChart.getEndTime().timeInMillis
-        var totTime = (endTime - startTime)/3600
+        val totTime = (endTime - startTime)/3600000.0
 
+        val totTimeTextView = createSleepDataElem(totTime, R.string.time_in_bed)
+
+        horizontalView.addView(totTimeTextView)
+
+        /* Time to fall asleep */
+
+        /* Total time in deep sleep */
+
+        /* Total time in light sleep */
+
+        /* Total time in REM phase */
+
+        /* Total time awake */
+
+        /* Overall quality */
+    }
+
+    private fun createSleepDataElem(numericData: Double, stringType: Int): TextView {
         // Show the total time slept
-        var totTimeTextView = TextView(context)
-        totTimeTextView.id = R.id.totTimeTextView
-        totTimeTextView.text = "Time in bed:"
-        totTimeTextView.textAlignment = TextView.TEXT_ALIGNMENT_CENTER
-        totTimeTextView.setTextColor(Color.rgb(174, 193, 232))
-        totTimeTextView.textSize = 10f
-        totTimeTextView.setTypeface(null, Typeface.BOLD)
-        val customFont = ResourcesCompat.getFont(requireContext(), R.font.source_serif_pro)
+        val sleepDataElem = TextView(context)
+        val formattedText = getString(stringType, numericData)
+        sleepDataElem.text = formattedText
+        sleepDataElem.textAlignment = TextView.TEXT_ALIGNMENT_TEXT_START
+        sleepDataElem.setTextColor(Color.rgb(174, 193, 232))
+        sleepDataElem.textSize = 20f
+
+        val padding = resources.getDimensionPixelSize(R.dimen.activity_horizontal_margin)
+        sleepDataElem.setPaddingRelative(padding, sleepDataElem.paddingTop, sleepDataElem.paddingEnd, sleepDataElem.paddingBottom)
+
+        val customFont = ResourcesCompat.getFont(requireContext(), R.font.source_code_pro)
         customFont?.let {
-            totTimeTextView.typeface = it
+            sleepDataElem.typeface = it
         }
+        applyAnimation(sleepDataElem)
 
-        var totTimeNumberTextView = TextView(context)
-        totTimeNumberTextView.id = R.id.totTimeNumberTextView
-        totTimeNumberTextView.text = totTime.toString()
+        return sleepDataElem
+    }
 
-        val imageView: ImageView = root.findViewById(R.id.pillowsIcon)
-        imageView.setImageResource(R.drawable.pillow)
+    private fun applyAnimation(textToAnimate: TextView) {
+        val animationDuration = 150
+
+        val textToType = textToAnimate.text
+        val animator = ValueAnimator.ofInt(0, textToType.length)
+        animator.duration = (animationDuration * textToType.length).toLong()
+        animator.addUpdateListener { animation ->
+            val progress = animation.animatedValue as Int
+            val animatedText = if (progress >= textToType.length) textToType else textToType.substring(0, progress + 1)
+            textToAnimate.text = animatedText
+        }
+        animator.start()
     }
 
     override fun onDestroyView() {
