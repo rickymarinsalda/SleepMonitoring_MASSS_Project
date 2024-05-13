@@ -1,10 +1,12 @@
 package com.example.pingapp
 
+import android.database.Cursor
+import android.database.sqlite.SQLiteDatabase
 import android.net.Uri
 import android.os.Bundle
+import android.provider.BaseColumns
 import android.util.Log
-import android.widget.TableLayout
-import android.widget.TableRow
+import android.view.View
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -27,6 +29,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
+import com.example.pingapp.db.EventManagerContract
+import com.example.pingapp.db.EventManagerDbHelper
 import com.example.pingapp.ui.theme.SleepMonitoring_MASSS_ProjectTheme
 import com.google.android.gms.wearable.CapabilityClient
 import com.google.android.gms.wearable.PutDataMapRequest
@@ -41,7 +45,10 @@ class PingActivity : ComponentActivity() {
     private val messageClient by lazy { Wearable.getMessageClient(this) }
     private val capabilityClient by lazy { Wearable.getCapabilityClient(this) }
 
-    private val clientDataViewModel by viewModels<ClientDataViewModel>()
+    private val clientDataViewModel: ClientDataViewModel by viewModels {
+        ClientDataViewModelFactory(dbHelper)
+    }
+    private lateinit var dbHelper: EventManagerDbHelper // helper for db
 
     override fun onResume() {
         super.onResume()
@@ -52,10 +59,12 @@ class PingActivity : ComponentActivity() {
             Uri.parse("wear://"),
             CapabilityClient.FILTER_ALL
         )
+        // dbHelper = EventManagerDbHelper(this)  // riaprire il db se necessario
     }
 
     override fun onPause() {
         super.onPause()
+        dbHelper.close()
         dataClient.removeListener(clientDataViewModel)
         messageClient.removeListener(clientDataViewModel)
         capabilityClient.removeListener(clientDataViewModel)
@@ -63,17 +72,26 @@ class PingActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        dbHelper = EventManagerDbHelper(this) // inizializzo db
+
+        // Gets the data repository in write mode
 
         clientDataViewModel.updateGUI = ::onNewTimeSeries
         //enableEdgeToEdge()
         setContent {
             PingView(onPongClick = ::onPongClick)
         }
+        setContent {
+            PingView(onQueryClick = ::onQueryClick)
+        }
     }
 
     private fun onNewTimeSeries(series: TimeSeries) {
         setContent {
             PingView(onPongClick = ::onPongClick, series = series)
+        }
+        setContent {
+            PingView(onQueryClick = ::onQueryClick)
         }
     }
 
@@ -98,14 +116,64 @@ class PingActivity : ComponentActivity() {
         }
     }
 
+    private fun onQueryClick() {
+        // Avvia un'operazione asincrona per eseguire la query del database
+        lifecycleScope.launch {
+            try {
+                Log.d("DatabaseTest", "ENTRA?!?")
+                val itemIds = queryDatabaseAndExtractIds(dbHelper)
+
+            } catch (e: Exception) {
+                // Gestisci eventuali eccezioni qui
+                Log.e("DatabaseTest", "Errore durante l'esecuzione della query: ${e.message}")
+            }
+        }
+    }
+    fun queryDatabase(dbHelper: EventManagerDbHelper): Deferred<Cursor?> = CoroutineScope(Dispatchers.IO).async {
+        val db = dbHelper.readableDatabase
+        Log.d("DatabaseTest", "ENTRATO DENTRO QUERYY DATABASE?!?")
+        val projection = arrayOf(BaseColumns._ID, EventManagerContract.SleepEvent.COLUMN_NAME_TIMESTAMP, EventManagerContract.SleepEvent.COLUMN_NAME_EVENT1)
+        val selection = "${EventManagerContract.SleepEvent.COLUMN_NAME_EVENT1} = ?"
+        val selectionArgs = arrayOf("boh")
+        val sortOrder = "${EventManagerContract.SleepEvent.COLUMN_NAME_EVENT1} DESC"
+        return@async db.query(
+            EventManagerContract.SleepEvent.TABLE_NAME1,
+            projection,
+            null,
+            null,
+            null,
+            null,
+            sortOrder
+        )
+    }
+
+    suspend fun queryDatabaseAndExtractIds(dbHelper: EventManagerDbHelper): List<Long> {
+        val itemIds = mutableListOf<Long>()
+        val cursor = queryDatabase(dbHelper).await()
+        Log.d("DatabaseTest", "ENTRATO DENTRO EXTRACT!?")
+        cursor?.use {
+            while (it.moveToNext()) {
+                val itemId = it.getLong(it.getColumnIndexOrThrow(BaseColumns._ID))
+                itemIds.add(itemId)
+                Log.d("DatabaseTest", "ID ottenuto dalla query: $itemId")
+            }
+        }
+
+        return itemIds
+    }
+
     companion object {
         private const val TAG = "PingActivity"
     }
 }
 
+
+
+
 @Composable
 fun PingView(
     onPongClick: () -> Unit = {},
+    onQueryClick: () -> Unit = {},
     series: TimeSeries = TimeSeries()
 ) {
     SleepMonitoring_MASSS_ProjectTheme {
@@ -113,6 +181,9 @@ fun PingView(
             Column {
                 Button(onClick = onPongClick, modifier = Modifier.fillMaxWidth()) {
                     Text(text = "Send Pong")
+                }
+                Button(onClick = onQueryClick, modifier = Modifier.fillMaxWidth()) {
+                    Text(text = "Query")
                 }
                 Greeting(
                         name = "Android",
