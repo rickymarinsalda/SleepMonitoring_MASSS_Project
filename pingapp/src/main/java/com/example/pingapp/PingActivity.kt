@@ -91,7 +91,7 @@ class PingActivity : ComponentActivity() {
             PingView(onPongClick = ::onPongClick, series = series)
         }
         setContent {
-            PingView(onQueryClick = ::onQueryClick)
+            PingView(onQueryClick = ::onQueryClick, series = series)
         }
     }
 
@@ -131,13 +131,13 @@ class PingActivity : ComponentActivity() {
     }
     fun queryDatabase(dbHelper: EventManagerDbHelper): Deferred<Cursor?> = CoroutineScope(Dispatchers.IO).async {
         val db = dbHelper.readableDatabase
-        Log.d("DatabaseTest", "ENTRATO DENTRO QUERYY DATABASE?!?")
-        val projection = arrayOf(BaseColumns._ID, EventManagerContract.SleepEvent.COLUMN_NAME_TIMESTAMP, EventManagerContract.SleepEvent.COLUMN_NAME_EVENT1)
-        val selection = "${EventManagerContract.SleepEvent.COLUMN_NAME_EVENT1} = ?"
+        Log.d("DatabaseTest", "ENTRATO DENTRO QUERYY DATABASE?!?") // query d'esempio dell'accelerazione
+        val projection = arrayOf(BaseColumns._ID, EventManagerContract.SleepEvent.COLUMN_NAME_TIMESTAMP, EventManagerContract.SleepEvent.COLUMN_NAME_EVENT2)
+        val selection = "${EventManagerContract.SleepEvent.COLUMN_NAME_EVENT2} = ?"
         val selectionArgs = arrayOf("boh")
-        val sortOrder = "${EventManagerContract.SleepEvent.COLUMN_NAME_EVENT1} DESC"
+        val sortOrder = "${EventManagerContract.SleepEvent.COLUMN_NAME_EVENT2} DESC"
         return@async db.query(
-            EventManagerContract.SleepEvent.TABLE_NAME1,
+            EventManagerContract.SleepEvent.TABLE_NAME2,
             projection,
             null,
             null,

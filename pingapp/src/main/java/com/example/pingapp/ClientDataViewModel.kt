@@ -43,14 +43,14 @@ class ClientDataViewModel(private val dbHelper: EventManagerDbHelper):
                 return
             }
 
-            if(dataMap.containsKey("data_accel")) { // momentaneamente data_accel perchè heart non va
+            if(dataMap.containsKey("data_heart")) { //
                 Log.i("TEST", "SONO ENTRATO IN DATA_HEART")
-                val dataHeart = dataMap.getDataMap("data_accel") ?: DataMap()
+                val dataHeart = dataMap.getDataMap("data_heart") ?: DataMap()
                 val series = TimeSeries.deserializeFromGoogle(dataHeart)
                 Log.i("TEST", "SERIES:"+ series)
                 if(series.size() > 0) {
                     val thread = Thread {
-                        val db = dbHelper.writableDatabase
+
                         for (i in 0 until series.size()) {
                             val datum = series.get(i)
                             val timestamp = SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(datum.timestamp)
@@ -66,8 +66,34 @@ class ClientDataViewModel(private val dbHelper: EventManagerDbHelper):
                 Log.i("DATA", "Missing data_heart in DataMap")
             }
 
-            updateGUI(TimeSeries.deserializeFromGoogle(dataMap.getDataMap("data_accel")!!))
+            if(dataMap.containsKey("data_accel")) {
+                Log.i("TEST", "SONO ENTRATO IN DATA_ACCEL")
 
+                val dataHeart = dataMap.getDataMap("data_accel") ?: DataMap()
+                val series = TimeSeries.deserializeFromGoogle(dataHeart)
+                Log.i("TEST", "SERIES:"+ series)
+                if(series.size() > 0) {
+                    val thread = Thread {
+
+                        for (i in 0 until series.size()) {
+                            val datum = series.get(i)
+                            val timestamp = SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(datum.timestamp)
+                            insertDataIntoDatabaseAccel(db, timestamp, datum.datum[0].toDouble())
+                        }
+                        db.close()
+
+                    }
+                    thread.start()
+                } else {
+                    Log.i("DATA", "No data received")
+                }
+            } else {
+                Log.i("DATA", "Missing data_accel in DataMap")
+            }
+
+
+
+            updateGUI(TimeSeries.deserializeFromGoogle(dataMap.getDataMap("data_accel")!!))
         }
 
 
@@ -91,6 +117,18 @@ class ClientDataViewModel(private val dbHelper: EventManagerDbHelper):
 
         // Insert the new row, returning the primary key value of the new row
         val newRowId = db.insert(EventManagerContract.SleepEvent.TABLE_NAME1, null, values)
+
+    }
+    private fun insertDataIntoDatabaseAccel(db: SQLiteDatabase, timestamp: String, acc: Double) {
+        Log.i("TEST", "INSERISCO NEL DB accel")
+        // Create a new map of values, where column names are the keys
+        val values = ContentValues().apply {
+            put(EventManagerContract.SleepEvent.COLUMN_NAME_TIMESTAMP, timestamp)
+            put(EventManagerContract.SleepEvent.COLUMN_NAME_EVENT2, acc)
+        }
+
+        // Insert the new row, returning the primary key value of the new row
+        val newRowId = db.insert(EventManagerContract.SleepEvent.TABLE_NAME2, null, values)
 
     }
 }
