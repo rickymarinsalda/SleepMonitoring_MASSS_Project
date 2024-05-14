@@ -2,8 +2,8 @@
     <!-- Base application theme. -->
     <style name="Theme.SleepMonitoringProject" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
         <!-- Primary brand color. -->
-        <item name="colorPrimary">@color/downriver</item>
-        <item name="colorPrimaryVariant">@color/chambray</item>
+        <item name="colorPrimary">@color/cello</item>
+        <item name="colorPrimaryVariant">@color/dark_down_river</item>
         <item name="colorOnPrimary">@color/white</item>
         <!-- Secondary brand color. -->
         <item name="colorSecondary">@color/teal_200</item>
@@ -20,7 +20,11 @@
         <item name="android:windowBackground">@color/downriver</item>
     </style>
 
-    <style name="Theme.SleepMonitoringProject.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
+    <style name="Theme.SleepMonitoringProject.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar">
+        <item name="android:textColorPrimary">@color/white</item>
+    </style>
 
-    <style name="Theme.SleepMonitoringProject.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+    <style name="Theme.SleepMonitoringProject.PopupOverlay" parent="ThemeOverlay.AppCompat.Light">
+        <item name="android:textColorPrimary">@color/white</item>
+    </style>
 </resources>

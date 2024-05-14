@@ -69,11 +69,11 @@ class HomeFragment : Fragment() {
             lastNightTitle.id = R.id.lastNightTitle
             lastNightTitle.text = getString(R.string.home_title_after_rec)
             lastNightTitle.textAlignment = TextView.TEXT_ALIGNMENT_CENTER
-            lastNightTitle.setTextColor(Color.rgb(174, 193, 232))
-            lastNightTitle.textSize = 24f
+            lastNightTitle.setTextColor(Color.WHITE)
+            lastNightTitle.textSize = 30f
             lastNightTitle.setTypeface(null, Typeface.BOLD)
 
-            val customFont = ResourcesCompat.getFont(requireContext(), R.font.source_code_pro)
+            val customFont = ResourcesCompat.getFont(requireContext(), R.font.source_serif_pro)
             customFont?.let {
                 lastNightTitle.typeface = it
             }
@@ -89,7 +89,7 @@ class HomeFragment : Fragment() {
             currentDateTextView.text = currentDateText
             currentDateTextView.textAlignment = TextView.TEXT_ALIGNMENT_CENTER
             currentDateTextView.setTextColor(Color.rgb(174, 193, 232))
-            currentDateTextView.textSize = 18f
+            currentDateTextView.textSize = 20f
             currentDateTextView.setTypeface(null, Typeface.BOLD)
 
             customFont?.let {
@@ -143,60 +143,45 @@ class HomeFragment : Fragment() {
         val startTime = lineChart.getStartTime().timeInMillis
         val endTime = lineChart.getEndTime().timeInMillis
         val totTime = (endTime - startTime)/3600000.0
-        val totTimeTextView = createSleepDataElem(totTime, R.string.time_in_bed)
-        horizontalView.addView(totTimeTextView)
-        textViewsToAnimate.add(totTimeTextView)
+        val totTimeTextView: TextView = root.findViewById(R.id.time_in_bed_text)
+        totTimeTextView.text = getString(R.string.time_asleep, totTime)
 
         /* Time to fall asleep */
         val startTimeAsleep = lineChart.getStartTimeAsleep()
         val differenceInMillis = startTimeAsleep - startTime
         val totTimeToFallAsleep = ((differenceInMillis / (1000.0 * 60.0)) * 10.0).roundToInt() / 10.0
-        val timeToFallAsleepTextView = createSleepDataElem(totTimeToFallAsleep, R.string.time_to_fall_asleep)
-        horizontalView.addView(timeToFallAsleepTextView)
-        textViewsToAnimate.add(timeToFallAsleepTextView)
+        val timeToFallAsleepTextView: TextView = root.findViewById(R.id.time_to_fall_asleep_text)
+        timeToFallAsleepTextView.text = getString(R.string.to_fall_asleep, totTimeToFallAsleep)
 
         /* Total time in deep sleep */
         val deepSleepTot = lineChart.getDeepSleepTotal()
-        val deepSleepTotTextView = createSleepDataElem(deepSleepTot, R.string.deep_sleep_tot)
-        horizontalView.addView(deepSleepTotTextView)
-        textViewsToAnimate.add(deepSleepTotTextView)
+        val deepSleepTextView: TextView = root.findViewById(R.id.deep_sleep_text)
+        deepSleepTextView.text = getString(R.string.deep_tot, deepSleepTot)
 
         /* Total time in light sleep */
         val lightSleepTot = lineChart.getLightSleepTotal()
         val lightSleepTotTextView = createSleepDataElem(lightSleepTot, R.string.light_sleep_tot)
-        horizontalView.addView(lightSleepTotTextView)
-        textViewsToAnimate.add(lightSleepTotTextView)
+        val lightSleepTextView: TextView = root.findViewById(R.id.light_sleep_text)
+        lightSleepTextView.text = getString(R.string.light_tot, lightSleepTot)
 
         /* Total time in REM phase */
         val remSleepTot = lineChart.getRemSleepTotal()
         val remSleepTotTextView = createSleepDataElem(remSleepTot, R.string.rem_phase_tot)
-        horizontalView.addView(remSleepTotTextView)
-        textViewsToAnimate.add(remSleepTotTextView)
+        val remSleepTextView: TextView = root.findViewById(R.id.rem_phase_text)
+        remSleepTextView.text = getString(R.string.rem_tot, remSleepTot)
 
         /* Total time awake */
         val awakeTime = lineChart.getAwakeTotal()
         val awakeTimeTextView = createSleepDataElem(awakeTime, R.string.awake_tot)
-        horizontalView.addView(awakeTimeTextView)
-        textViewsToAnimate.add(awakeTimeTextView)
+        val awakeTextView: TextView = root.findViewById(R.id.awake_text)
+        awakeTextView.text = getString(R.string.awake, awakeTime)
 
         /* Overall quality */
+        // TODO TOFIX it doesn't show up
         val quality = (deepSleepTot + lightSleepTot + remSleepTot) / totTime // TODO To understand how to calculate the quality
         val qualityTextView = createSleepDataElem(quality, R.string.quality)
-        horizontalView.addView(qualityTextView)
-        textViewsToAnimate.add(qualityTextView)
-        /*val qualityView: LinearLayout = root.findViewById(R.id.quality_layout)
-        qualityView.addView(qualityTextView)*/
-
-        /* Start showing data */
-        animationQueue.add(totTimeTextView)
-        animationQueue.add(timeToFallAsleepTextView)
-        animationQueue.add(deepSleepTotTextView)
-        animationQueue.add(lightSleepTotTextView)
-        animationQueue.add(remSleepTotTextView)
-        animationQueue.add(awakeTimeTextView)
-        animationQueue.add(qualityTextView)
-
-        startAnimationSequence()
+        val qualityView: LinearLayout = root.findViewById(R.id.quality_layout)
+        qualityView.addView(qualityTextView)
     }
 
     private fun createSleepDataElem(numericData: Double, stringType: Int): TextView {
@@ -216,7 +201,7 @@ class HomeFragment : Fragment() {
             sleepDataElem.setPadding(sleepDataElem.paddingLeft, paddingTop, sleepDataElem.paddingRight, sleepDataElem.paddingBottom)
         }
 
-        val customFont = ResourcesCompat.getFont(requireContext(), R.font.source_code_pro)
+        val customFont = ResourcesCompat.getFont(requireContext(), R.font.source_serif_pro)
         customFont?.let {
             sleepDataElem.typeface = it
         }

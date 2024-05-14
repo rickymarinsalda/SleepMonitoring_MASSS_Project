@@ -123,7 +123,7 @@ class SleepLineChart(rootView: View) {
         set1.setDrawCircles(false)
         set1.circleRadius = 0f
         set1.circleHoleRadius = 0f
-        set1.color = Color.WHITE
+        set1.color = Color.rgb(255, 215, 0)
         set1.highLightColor = Color.WHITE
         set1.setDrawValues(false)
         set1.setDrawFilled(true)
