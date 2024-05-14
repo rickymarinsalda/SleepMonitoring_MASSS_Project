@@ -79,19 +79,14 @@ class PingActivity : ComponentActivity() {
         clientDataViewModel.updateGUI = ::onNewTimeSeries
         //enableEdgeToEdge()
         setContent {
-            PingView(onPongClick = ::onPongClick)
+            PingView(onPongClick = ::onPongClick, onQueryClick = ::onQueryClick)
         }
-        setContent {
-            PingView(onQueryClick = ::onQueryClick)
-        }
+
     }
 
     private fun onNewTimeSeries(series: TimeSeries) {
         setContent {
-            PingView(onPongClick = ::onPongClick, series = series)
-        }
-        setContent {
-            PingView(onQueryClick = ::onQueryClick, series = series)
+            PingView(onPongClick = ::onPongClick, series = series, onQueryClick = ::onQueryClick)
         }
     }
 
