@@ -7,6 +7,7 @@ import android.util.AttributeSet
 import android.util.Log
 import android.view.LayoutInflater
 import android.widget.LinearLayout
+import androidx.appcompat.app.AppCompatActivity
 import com.github.mikephil.charting.charts.BarChart
 import com.github.mikephil.charting.components.Legend
 import com.github.mikephil.charting.components.XAxis
@@ -14,9 +15,14 @@ import com.github.mikephil.charting.data.BarData
 import com.github.mikephil.charting.data.BarDataSet
 import com.github.mikephil.charting.data.BarEntry
 import com.github.mikephil.charting.formatter.ValueFormatter
+import com.github.mikephil.charting.interfaces.datasets.IBarDataSet
 import com.unipi.sleepmonitoringproject.R
+import java.text.SimpleDateFormat
 import java.util.Calendar
+import java.util.Date
+import java.util.Locale
 import java.util.Random
+
 
 class SleepBarChart(context: Context?, attrs: AttributeSet?) :
     LinearLayout(context, attrs) {
@@ -30,10 +36,13 @@ class SleepBarChart(context: Context?, attrs: AttributeSet?) :
 
         // Find the TextView by its ID
         val barChart: BarChart = rootView.findViewById(R.id.bar_chart)
+        barChart.setNoDataText("")
+        barChart.invalidate()
+
 
         val mTf: Typeface = Typeface.DEFAULT
 
-        val data: BarData = getData()
+        val data: BarData = getDataFromActivity()
 
         Log.d("SBORRA", "data -> $data")
 
@@ -67,6 +76,7 @@ class SleepBarChart(context: Context?, attrs: AttributeSet?) :
 
             // Add data
             barChart.setData(data)
+            barChart.invalidate()
 
             // Get and handle the legend
             val legend: Legend = barChart.legend
@@ -84,7 +94,7 @@ class SleepBarChart(context: Context?, attrs: AttributeSet?) :
             xAxis.position = XAxis.XAxisPosition.BOTTOM
 
             val yAxis = barChart.axisLeft
-            //yAxis.valueFormatter = SleepTypeValueFormatter()
+            // yAxis.valueFormatter = SleepTypeValueFormatter()
             yAxis.setDrawLabels(true)
             yAxis.setDrawAxisLine(true)
             yAxis.setDrawGridLines(false)
@@ -116,56 +126,60 @@ class SleepBarChart(context: Context?, attrs: AttributeSet?) :
         }
     }
 
-    fun generateFullNightData(): ArrayList<BarEntry> {
+    private fun generateBarEntries(): ArrayList<BarEntry> {
         val values = ArrayList<BarEntry>()
         val startTime = Calendar.getInstance()
-        startTime.set(2024, Calendar.MAY, 7, 22, 0) // Data e ora di inizio del sonno
+        startTime.set(2024, Calendar.MAY, 7, 22, 0) // Start date and time of sleep
         val endTime = Calendar.getInstance()
-        endTime.set(2024, Calendar.MAY, 8, 6, 0) // Data e ora di fine del sonno
+        endTime.set(2024, Calendar.MAY, 8, 6, 0) // End date and time of sleep
+
+        val sleepPhaseDuration = 30 * 60 * 1000 // 30 minutes
 
         val random = Random()
 
-        val sleepPhaseDuration = 30 * 60 * 1000 // 30 minuti
-
         val currentTime = startTime.clone() as Calendar
         while (currentTime.before(endTime)) {
+            //val timestamp = currentTime.timeInMillis - startTime.timeInMillis
             val timestamp = currentTime.timeInMillis
+
 
             // Generazione casuale del tipo di sonno
             val sleepType = random.nextInt(4)
 
-            // Aggiunta dei dati all'elenco di valori con etichetta
-            val fTimestamp = timestamp.toFloat()
+            // Adding data to the list of values
+            val fTimestamp = timestamp.toFloat() / (1000 * 60)
+            //val fTimestamp = timestamp.toFloat()
+
+            Log.d("TIMESTAMP", "Timestamp -> $fTimestamp")
+
+            //TODO FIXME
             val fSleepType = sleepType.toFloat()
             val newEntry = BarEntry(fTimestamp, fSleepType)
-            println(newEntry)
             values.add(newEntry)
 
-            // Avanzamento del tempo di una durata fissa per ogni fase del sonno
-            currentTime.timeInMillis += sleepPhaseDuration
+            // Advancing time by a fixed duration for each sleep phase
+            currentTime.add(Calendar.MILLISECOND,sleepPhaseDuration)
+
         }
         return values
     }
 
-    private fun getData(): BarData {
+    private fun getDataFromActivity(): BarData {
 
-        val values = generateFullNightData()
+        val activity = context as? AppCompatActivity ?: return BarData()
 
-        Log.d("GENERATE FULL NIGHT DATA", "Data -> $values")
+        val values = generateBarEntries()
 
-        val barDataSet = BarDataSet(values, "Last night of sleep")
+        val barDataSet = BarDataSet(values, "The year 2017")
+        barDataSet.setDrawIcons(false)
 
-        Log.d("GENERATE FULL NIGHT DATA", "BarDataSet -> $barDataSet")
+        val dataSets = ArrayList<IBarDataSet>()
+        dataSets.add(barDataSet)
 
-        barDataSet.setDrawValues(false)
-        barDataSet.color = Color.rgb(83, 99, 135)
+        val data = BarData(dataSets)
+        data.setValueTextSize(10f)
+        data.barWidth = 0.9f
 
-
-        val ret = BarData(barDataSet)
-
-        Log.d("GENERATE FULL NIGHT DATA", "BarData -> $ret")
-
-
-        return ret
+        return data
     }
 }
