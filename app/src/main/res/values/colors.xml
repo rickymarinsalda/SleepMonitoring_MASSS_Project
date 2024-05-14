@@ -8,7 +8,8 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="downriver">#092054</color>
-    <color name="halfbaked">#89C5C9</color>
+    <color name="half_baked">#89C5C9</color>
     <color name="chambray">#324D89</color>"
-    <color name="darkdownriver">#141F37</color>
+    <color name="dark_down_river">#141F37</color>
+    <color name="spindle">#AEC1E8</color>
 </resources>

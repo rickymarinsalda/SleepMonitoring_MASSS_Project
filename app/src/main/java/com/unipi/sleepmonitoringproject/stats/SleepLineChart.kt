@@ -22,6 +22,11 @@ class SleepLineChart(rootView: View) {
 
     private lateinit var startTime : Calendar
     private lateinit var endTime : Calendar
+    private var startTimeAsleep: Long = -1
+    private var deepSleepTotal: Double = 0.0
+    private var lightSleepTotal: Double = 0.0
+    private var remSleepTotal: Double = 0.0
+    private var awakeTotal: Double = 0.0
 
     init {
 
@@ -111,6 +116,7 @@ class SleepLineChart(rootView: View) {
     private fun getData(): LineData {
 
         val values = generateFullNightData()
+        calculateSleepTotals(values)
 
         val set1 = LineDataSet(values, "Last night of sleep")
 
@@ -128,7 +134,22 @@ class SleepLineChart(rootView: View) {
         return LineData(set1)
     }
 
-    fun generateFullNightData(): ArrayList<Entry> {
+    private fun calculateSleepTotals(sleepData: ArrayList<Entry>) {
+        val sleepTotals = mutableMapOf<Int, Double>().withDefault { 0.0 }
+
+        for (entry in sleepData) {
+            val sleepType = entry.y.toInt()
+            val sleepDuration = sleepTotals.getValue(sleepType)
+            sleepTotals[sleepType] = sleepDuration + 0.5 // Incrementa la durata di ciascun tipo di sonno di 0.5 (30 minuti)
+        }
+
+        deepSleepTotal = sleepTotals[0] ?: 0.0
+        remSleepTotal = sleepTotals[1] ?: 0.0
+        lightSleepTotal = sleepTotals[2] ?: 0.0
+        awakeTotal = sleepTotals[3] ?: 0.0
+    }
+
+    private fun generateFullNightData(): ArrayList<Entry> {
         val values = ArrayList<Entry>()
         startTime = Calendar.getInstance()
         startTime.set(2024, Calendar.MAY, 7, 22, 0) // Data e ora di inizio del sonno
@@ -145,6 +166,11 @@ class SleepLineChart(rootView: View) {
 
             // Generazione casuale del tipo di sonno
             val sleepType = random.nextInt(4)
+
+            // Se il tipo di sonno non è "awake", registra il timestamp del primo dato non "awake"
+            if (sleepType == 3 && startTimeAsleep.toInt() == -1) {
+                startTimeAsleep = timestamp
+            }
 
             // Aggiunta dei dati all'elenco di valori con etichetta
             val fTimestamp = timestamp.toFloat()
@@ -168,6 +194,26 @@ class SleepLineChart(rootView: View) {
 
     fun getEndTime() : Calendar {
         return endTime
+    }
+
+    fun getStartTimeAsleep(): Long {
+        return startTimeAsleep
+    }
+
+    fun getDeepSleepTotal(): Double {
+        return deepSleepTotal
+    }
+
+    fun getLightSleepTotal(): Double {
+        return lightSleepTotal
+    }
+
+    fun getRemSleepTotal(): Double {
+        return remSleepTotal
+    }
+
+    fun getAwakeTotal(): Double {
+        return awakeTotal
     }
 }
 

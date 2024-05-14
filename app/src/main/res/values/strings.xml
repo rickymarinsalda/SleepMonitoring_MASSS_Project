@@ -10,4 +10,14 @@
     <string name="menu_home">Home</string>
     <string name="menu_stats">Stats</string>
     <string name="menu_slideshow">Slideshow</string>
+
+    <string name="home_title_after_rec">Your last night of sleep</string>
+    <string name="data_title">Data</string>
+    <string name="time_in_bed">Time in bed: %.1f h</string>
+    <string name="time_to_fall_asleep">Time to fall asleep: %.1f m</string>
+    <string name="deep_sleep_tot">Deep sleep tot time: %.1f h</string>
+    <string name="light_sleep_tot">Light sleep tot time: %.1f h</string>
+    <string name="rem_phase_tot">REM phase tot time: %.1f h</string>
+    <string name="awake_tot">Awake tot time: %.1f h</string>
+    <string name="quality">Overall quality: %.1f</string>
 </resources>
