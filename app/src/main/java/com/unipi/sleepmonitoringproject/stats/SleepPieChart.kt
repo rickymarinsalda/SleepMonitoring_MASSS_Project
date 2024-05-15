@@ -58,8 +58,7 @@ class SleepPieChart(rootView: View) {
         pieChart.setEntryLabelTypeface(Typeface.DEFAULT_BOLD)
         pieChart.setEntryLabelTextSize(12f)
 
-        var legend: Legend = pieChart.legend
-        legend.textColor = Color.WHITE
+        pieChart.legend.textColor = Color.WHITE
     }
 
     private fun setData() {
