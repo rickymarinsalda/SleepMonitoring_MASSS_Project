@@ -19,4 +19,17 @@
 
     <string name="time_asleep_d">in bed</string>
     <string name="to_fall_asleep_d">to fall asleep</string>
+    <string name="pillow_icon">pillow icon</string>
+    <string name="inbed_basic_text">inbed</string>
+    <string name="sheep_icon">sheep icon</string>
+    <string name="asleep_basic_text">asleep</string>
+
+    <!-- Case sleep not registered -->
+    <string name="home_title_before_rec">Sleep not yet registered.</string>
+
+    <!-- Recording Fragment -->
+    <string name="stop_recording">Stop</string>
+    <string name="good_night">Good night!</string>
+    <string name="see_you">recording your sleep data…</string>
+    <string name="moon_recording_icon">Moon recording icon</string>
 </resources>

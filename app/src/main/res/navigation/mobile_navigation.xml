@@ -22,4 +22,15 @@
         android:name="com.unipi.sleepmonitoringproject.ui.slideshow.SlideshowFragment"
         android:label="@string/menu_slideshow"
         tools:layout="@layout/fragment_slideshow" />
+
+    <fragment
+        android:id="@+id/recordingFragment"
+        android:name="com.unipi.sleepmonitoringproject.ui.home.RecordingFragment"
+        android:label="recording"
+        tools:layout="@layout/fragment_recording" />
+
+    <!-- Actions -->
+    <action
+        android:id="@+id/action_nav_home_to_recordingFragment"
+        app:destination="@id/recordingFragment" />
 </navigation>

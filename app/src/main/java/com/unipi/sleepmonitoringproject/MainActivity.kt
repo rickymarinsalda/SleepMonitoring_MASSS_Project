@@ -12,13 +12,14 @@ import androidx.navigation.ui.setupWithNavController
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.appcompat.app.AppCompatActivity
 import com.unipi.sleepmonitoringproject.databinding.ActivityMainBinding
+import com.unipi.sleepmonitoringproject.ui.home.RecordingFragment
 
 //FRAGMENTS DA AGGIUNGERE: HOME, STATISTICHE, POWER_CONSUMPTION, LOGIN/LOGOUT (FORSE), PROFILO
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var appBarConfiguration: AppBarConfiguration
-    private lateinit var binding: ActivityMainBinding
+    lateinit var binding: ActivityMainBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -30,9 +31,13 @@ class MainActivity : AppCompatActivity() {
 
         binding.appBarMain.fab.setOnClickListener { view ->
             //TODO
-            Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+            Snackbar.make(view, "Start to record your sleep data", Snackbar.LENGTH_LONG)
                 .setAction("Action", null)
                 .setAnchorView(R.id.fab).show()
+
+            /* Open the recording fragment */
+            val navController = findNavController(R.id.nav_host_fragment_content_main)
+            navController.navigate(R.id.action_nav_home_to_recordingFragment)
         }
         val drawerLayout: DrawerLayout = binding.drawerLayout
         val navView: NavigationView = binding.navView

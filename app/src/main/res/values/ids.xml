@@ -5,4 +5,5 @@
     <item name="totTimeTextView" type="id" />
     <item name="totTimeNumberTextView" type="id" />
     <item name="pillowsIcon" type="id" />
+    <item name="noDataTextView" type="id" />
 </resources>
