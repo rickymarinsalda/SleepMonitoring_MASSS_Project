@@ -57,10 +57,12 @@
 
         <!-- First row -->
         <LinearLayout
+            android:id="@+id/sleep_info_layout"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:visibility="gone">
 
             <!-- Pillow image -->
             <androidx.constraintlayout.widget.ConstraintLayout
@@ -81,7 +83,8 @@
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintVertical_bias="0.5" />
+                    app:layout_constraintVertical_bias="0.5"
+                    android:contentDescription="@string/pillow_icon" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -105,7 +108,7 @@
                     android:layout_marginTop="20dp"
                     android:layout_marginBottom="20dp"
                     android:fontFamily="@font/source_serif_pro"
-                    android:text="inbed"
+                    android:text="@string/inbed_basic_text"
                     android:textColor="@color/white"
                     android:textSize="30sp"
                     app:layout_constraintBottom_toBottomOf="parent"
@@ -152,7 +155,8 @@
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintVertical_bias="0.5" />
+                    app:layout_constraintVertical_bias="0.5"
+                    android:contentDescription="@string/sheep_icon" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -175,7 +179,7 @@
                     android:layout_gravity="top|center_horizontal"
                     android:layout_marginTop="20dp"
                     android:fontFamily="@font/source_serif_pro"
-                    android:text="asleep"
+                    android:text="@string/asleep_basic_text"
                     android:textColor="@color/white"
                     android:textSize="30sp"
                     app:layout_constraintBottom_toBottomOf="parent"

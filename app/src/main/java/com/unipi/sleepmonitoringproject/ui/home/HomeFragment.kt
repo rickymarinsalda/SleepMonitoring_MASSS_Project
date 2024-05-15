@@ -1,7 +1,5 @@
 package com.unipi.sleepmonitoringproject.ui.home
 
-import android.animation.Animator
-import android.animation.AnimatorListenerAdapter
 import android.graphics.Color
 import android.graphics.Typeface
 import android.os.Build
@@ -9,6 +7,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.annotation.RequiresApi
 import androidx.constraintlayout.widget.ConstraintLayout
@@ -21,9 +20,6 @@ import com.unipi.sleepmonitoringproject.databinding.FragmentHomeBinding
 import com.unipi.sleepmonitoringproject.stats.SleepLineChart
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
-import android.animation.ValueAnimator
-import android.widget.LinearLayout
-import androidx.core.animation.doOnEnd
 import com.unipi.sleepmonitoringproject.stats.SleepPieChart
 import java.util.LinkedList
 import kotlin.math.roundToInt
@@ -32,15 +28,11 @@ class HomeFragment : Fragment() {
 
     private var _binding: FragmentHomeBinding? = null
 
-    // This property is only valid between onCreateView and
-    // onDestroyView.
     private val binding get() = _binding!!
 
     private var dataAvailable: Boolean = true
 
     private lateinit var root: View
-
-    private var animationQueue: LinkedList<TextView> = LinkedList()
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreateView(
@@ -128,6 +120,10 @@ class HomeFragment : Fragment() {
             /* Creation of the sleep line chart */
             val lineChart = SleepLineChart(root)
 
+            /* Set sleep informations views as visible */
+            val sleepInfoLayout: LinearLayout = root.findViewById(R.id.sleep_info_layout)
+            sleepInfoLayout.visibility = View.VISIBLE
+
             /* Total time in bed */
             val startTime = lineChart.getStartTime().timeInMillis
             val endTime = lineChart.getEndTime().timeInMillis
@@ -143,20 +139,37 @@ class HomeFragment : Fragment() {
             timeToFallAsleepTextView.text = getString(R.string.to_fall_asleep, totTimeToFallAsleep)
 
             /* Creation of the pie chart */
-            val pieChart = SleepPieChart(root)
-
-            /* Inclusion of the module */
-            /*
-            val inflater: LayoutInflater = layoutInflater
-            // Gonfiare il layout sample_layout.xml usando View Binding
-            val sampleBinding = SampleLayoutBinding.inflate(inflater)
-            binding.container.addView(sampleBinding.root)
-            container.addView(view)*/
+            SleepPieChart(root)
         }
+        else {
+            val noDataTextView = TextView(context)
+            noDataTextView.id = R.id.noDataTextView
+            noDataTextView.text = getString(R.string.home_title_before_rec)
+            noDataTextView.textAlignment = TextView.TEXT_ALIGNMENT_CENTER
+            noDataTextView.setTextColor(Color.WHITE)
+            noDataTextView.textSize = 30f
+            noDataTextView.setTypeface(null, Typeface.BOLD)
 
-        // TODO
-        // Se non ho registrato:
-        // Testo "Inizia a registrare"
+            val customFont = ResourcesCompat.getFont(requireContext(), R.font.source_serif_pro)
+            customFont?.let {
+                noDataTextView.typeface = it
+            }
+
+            constraintLayout.addView(noDataTextView)
+
+            val noDataLayoutParams = noDataTextView.layoutParams as ConstraintLayout.LayoutParams
+            noDataLayoutParams.width = ConstraintLayout.LayoutParams.WRAP_CONTENT
+            noDataLayoutParams.height = ConstraintLayout.LayoutParams.WRAP_CONTENT
+
+            val constraintSet = ConstraintSet()
+            constraintSet.clone(constraintLayout)
+            constraintSet.connect(noDataTextView.id, ConstraintSet.TOP, constraintLayout.id, ConstraintSet.TOP)
+            constraintSet.connect(noDataTextView.id, ConstraintSet.START, constraintLayout.id, ConstraintSet.START)
+            constraintSet.connect(noDataTextView.id, ConstraintSet.END, constraintLayout.id, ConstraintSet.END)
+            constraintSet.setHorizontalBias(noDataTextView.id, 0.5f)
+            constraintSet.setVerticalBias(noDataTextView.id, 0.3f)
+            constraintSet.applyTo(constraintLayout)
+        }
     }
 
     override fun onDestroyView() {
