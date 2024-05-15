@@ -13,25 +13,10 @@
 
     <string name="home_title_after_rec">Your last night of sleep</string>
     <string name="data_title">Sleep information</string>
-    <string name="time_in_bed">Time in bed: %.1f h</string>
-    <string name="time_to_fall_asleep">Time to fall asleep: %.1f m</string>
-    <string name="deep_sleep_tot">Deep sleep tot time: %.1f h</string>
-    <string name="light_sleep_tot">Light sleep tot time: %.1f h</string>
-    <string name="rem_phase_tot">REM phase tot time: %.1f h</string>
-    <string name="awake_tot">Awake tot time: %.1f h</string>
-    <string name="quality">Overall quality: %.1f</string>
 
     <string name="time_asleep">%.1f h</string>
     <string name="to_fall_asleep">%.1f m</string>
-    <string name="deep_tot">%.1f h</string>
-    <string name="light_tot">%.1f h</string>
-    <string name="rem_tot">%.1f h</string>
-    <string name="awake">%.1f h</string>
 
     <string name="time_asleep_d">in bed</string>
     <string name="to_fall_asleep_d">to fall asleep</string>
-    <string name="deep_tot_d">of deep sleep</string>
-    <string name="light_tot_d">of light sleep</string>
-    <string name="rem_tot_d">of REM phase</string>
-    <string name="awake_d">awake</string>
 </resources>

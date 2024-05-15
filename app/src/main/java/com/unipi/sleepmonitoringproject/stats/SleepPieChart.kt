@@ -5,6 +5,7 @@ import android.graphics.Typeface
 import android.view.View
 import com.github.mikephil.charting.animation.Easing
 import com.github.mikephil.charting.charts.PieChart
+import com.github.mikephil.charting.components.Legend
 import com.github.mikephil.charting.data.PieData
 import com.github.mikephil.charting.data.PieDataSet
 import com.github.mikephil.charting.data.PieEntry
@@ -20,13 +21,11 @@ class SleepPieChart(rootView: View) {
     private val pieChart: PieChart = rootView.findViewById(R.id.pie_chart)
 
     init {
-
-        setupChart(rootView)
-
+        setupChart()
         setData()
     }
 
-    private fun setupChart(root: Any?) {
+    private fun setupChart() {
 
         pieChart.setUsePercentValues(true)
         pieChart.description.isEnabled = false
@@ -42,13 +41,12 @@ class SleepPieChart(rootView: View) {
         pieChart.setTransparentCircleAlpha(110)
         pieChart.setTransparentCircleColor(Color.WHITE)
 
-        pieChart.setHoleRadius(58f)
-        pieChart.setTransparentCircleRadius(61f)
+        pieChart.holeRadius = 58f
+        pieChart.transparentCircleRadius = 61f
 
         pieChart.setDrawCenterText(true)
 
         pieChart.setRotationAngle(0f)
-        // enable rotation of the chart by touch
         pieChart.isRotationEnabled = true
         pieChart.isHighlightPerTapEnabled = true
 
@@ -59,6 +57,9 @@ class SleepPieChart(rootView: View) {
         pieChart.setEntryLabelColor(Color.WHITE)
         pieChart.setEntryLabelTypeface(Typeface.DEFAULT_BOLD)
         pieChart.setEntryLabelTextSize(12f)
+
+        var legend: Legend = pieChart.legend
+        legend.textColor = Color.WHITE
     }
 
     private fun setData() {
@@ -73,7 +74,7 @@ class SleepPieChart(rootView: View) {
             )
         }
 
-        val dataSet = PieDataSet(entries, "Election Results")
+        val dataSet = PieDataSet(entries, "")
 
         dataSet.setDrawIcons(false)
 
@@ -99,7 +100,6 @@ class SleepPieChart(rootView: View) {
         dataSet.colors = colors
         //dataSet.setSelectionShift(0f);
 
-        //dataSet.setSelectionShift(0f);
         val data = PieData(dataSet)
         data.setValueFormatter(PercentFormatter())
         data.setValueTextSize(11f)
