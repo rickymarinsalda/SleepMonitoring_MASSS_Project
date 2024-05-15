@@ -24,6 +24,7 @@ import java.time.format.DateTimeFormatter
 import android.animation.ValueAnimator
 import android.widget.LinearLayout
 import androidx.core.animation.doOnEnd
+import com.unipi.sleepmonitoringproject.stats.SleepPieChart
 import java.util.LinkedList
 import kotlin.math.roundToInt
 
@@ -143,18 +144,21 @@ class HomeFragment : Fragment() {
         val startTime = lineChart.getStartTime().timeInMillis
         val endTime = lineChart.getEndTime().timeInMillis
         val totTime = (endTime - startTime)/3600000.0
-        val totTimeTextView: TextView = root.findViewById(R.id.time_in_bed_text)
+        val totTimeTextView: TextView = root.findViewById(R.id.time_in_bed)
         totTimeTextView.text = getString(R.string.time_asleep, totTime)
 
         /* Time to fall asleep */
         val startTimeAsleep = lineChart.getStartTimeAsleep()
         val differenceInMillis = startTimeAsleep - startTime
         val totTimeToFallAsleep = ((differenceInMillis / (1000.0 * 60.0)) * 10.0).roundToInt() / 10.0
-        val timeToFallAsleepTextView: TextView = root.findViewById(R.id.time_to_fall_asleep_text)
+        val timeToFallAsleepTextView: TextView = root.findViewById(R.id.time_to_fall_asleep)
         timeToFallAsleepTextView.text = getString(R.string.to_fall_asleep, totTimeToFallAsleep)
 
+        /* Creation of the pie chart */
+        val pieChart = SleepPieChart(root)
+
         /* Total time in deep sleep */
-        val deepSleepTot = lineChart.getDeepSleepTotal()
+        /*val deepSleepTot = lineChart.getDeepSleepTotal()
         val deepSleepTextView: TextView = root.findViewById(R.id.deep_sleep_text)
         deepSleepTextView.text = getString(R.string.deep_tot, deepSleepTot)
 
@@ -181,7 +185,7 @@ class HomeFragment : Fragment() {
         val quality = (deepSleepTot + lightSleepTot + remSleepTot) / totTime // TODO To understand how to calculate the quality
         val qualityTextView = createSleepDataElem(quality, R.string.quality)
         val qualityView: LinearLayout = root.findViewById(R.id.quality_layout)
-        qualityView.addView(qualityTextView)
+        qualityView.addView(qualityTextView)*/
     }
 
     private fun createSleepDataElem(numericData: Double, stringType: Int): TextView {
