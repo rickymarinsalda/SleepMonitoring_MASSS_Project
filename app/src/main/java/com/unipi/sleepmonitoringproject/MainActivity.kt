@@ -12,7 +12,6 @@ import androidx.navigation.ui.setupWithNavController
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.appcompat.app.AppCompatActivity
 import com.unipi.sleepmonitoringproject.databinding.ActivityMainBinding
-import com.unipi.sleepmonitoringproject.ui.home.RecordingFragment
 
 //FRAGMENTS DA AGGIUNGERE: HOME, STATISTICHE, POWER_CONSUMPTION, LOGIN/LOGOUT (FORSE), PROFILO
 

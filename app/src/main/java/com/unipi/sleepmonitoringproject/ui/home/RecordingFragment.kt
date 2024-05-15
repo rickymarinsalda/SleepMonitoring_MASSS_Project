@@ -15,10 +15,6 @@ class RecordingFragment : Fragment() {
 
     private var _binding: FragmentHomeBinding? = null
 
-    private val binding get() = _binding!!
-
-    private lateinit var root: View
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?

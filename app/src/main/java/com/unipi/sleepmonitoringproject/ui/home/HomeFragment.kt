@@ -21,7 +21,6 @@ import com.unipi.sleepmonitoringproject.stats.SleepLineChart
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import com.unipi.sleepmonitoringproject.stats.SleepPieChart
-import java.util.LinkedList
 import kotlin.math.roundToInt
 
 class HomeFragment : Fragment() {
