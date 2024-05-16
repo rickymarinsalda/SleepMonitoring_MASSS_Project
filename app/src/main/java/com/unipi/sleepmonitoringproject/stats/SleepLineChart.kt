@@ -5,7 +5,6 @@ import android.graphics.Typeface
 import android.util.Log
 import android.view.View
 import com.github.mikephil.charting.charts.LineChart
-import com.github.mikephil.charting.components.Legend
 import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
@@ -64,10 +63,7 @@ class SleepLineChart(rootView: View) {
             // Add data
             lineChart.data = data
 
-            // Get and handle the legend
-            val legend: Legend = lineChart.legend
-            legend.isEnabled = true
-            legend.textColor = Color.WHITE
+            lineChart.legend.isEnabled = false
 
             lineChart.xAxis.isEnabled = true
             lineChart.axisLeft.isEnabled = true
