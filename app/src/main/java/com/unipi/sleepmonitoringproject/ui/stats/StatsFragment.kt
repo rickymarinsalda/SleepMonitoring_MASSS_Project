@@ -13,8 +13,7 @@ class StatsFragment : Fragment() {
 
     private var _binding: FragmentStatsBinding? = null
 
-    // This property is only valid between onCreateView and
-    // onDestroyView.
+    // This property is only valid between onCreateView and onDestroyView.
     private val binding get() = _binding!!
 
     override fun onCreateView(
@@ -22,18 +21,16 @@ class StatsFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        //val galleryViewModel =
-        //    ViewModelProvider(this).get(StatsViewModel::class.java)
-
         _binding = FragmentStatsBinding.inflate(inflater, container, false)
 
         val root: View = binding.root
-
         Log.d("DEBUG", "root -> $root")
 
+        // Assuming bar_chart.xml is a layout for SleepBarChart and
+        // we are inflating it programmatically.
         val barChart = SleepBarChart(context, null)
-
-        binding.root.addView(barChart)
+        // Assuming there is a container or a placeholder in fragment_stats.xml to add the bar chart.
+        binding.barChartContainer.addView(barChart)
 
         return root
     }
