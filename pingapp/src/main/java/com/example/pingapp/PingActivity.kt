@@ -1,5 +1,7 @@
 package com.example.pingapp
 
+import android.content.ContentValues
+import android.content.Context
 import android.database.Cursor
 import android.net.Uri
 import android.os.Bundle
@@ -36,6 +38,8 @@ import com.google.android.gms.wearable.PutDataMapRequest
 import com.google.android.gms.wearable.Wearable
 import com.unipi.sleepmonitoring_masss_library.TimeSeries
 import kotlinx.coroutines.*
+import java.io.BufferedReader
+import java.io.InputStreamReader
 import java.text.SimpleDateFormat
 import java.time.Instant
 import java.util.Calendar
@@ -75,6 +79,9 @@ class PingActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         dbHelper = EventManagerDbHelper(this) // inizializzo db
+
+       // clearDatabase(dbHelper) // PULISCE IL DB
+        //insertHeartRateDataFromFile(this, "8692923_heartrate.txt") // AGGIUNGE AL DB ROBA DA FILE IN /ASSETS
 
         // Gets the data repository in write mode
 
@@ -135,11 +142,12 @@ class PingActivity : ComponentActivity() {
                     val value = event.value.toDouble()
                     val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
                     val timestamp_stringa = dateFormat.format(Date(timestamp))
-                    Log.d("DatabaseTest", "Timestamp: $timestamp_stringa, Value: $value")
+                   // Log.d("DatabaseTest", "Timestamp: $timestamp_stringa, Value: $value")
                 }
 
                // val itemIds = queryDatabaseAndExtractIds(dbHelper) // questa è una query d'esempio per vedè se va
                 // Chiamata all'algoritmo
+
                 val sleepStages = algorithm_1(sleepEvents)
 
                 // Stampa i risultati dell'algoritmo
@@ -269,11 +277,12 @@ class PingActivity : ComponentActivity() {
 
         // Calcola la deviazione standard per i valori raccolti
         //val stdDev = calculateStandardDeviation(currentValues)
+        /* QUESTI QUA A REGOLA NON SERVONO PIÙ
         val y0 = SleepStageClassifier.calculateY0(currentValuesArray)
         val y1 = SleepStageClassifier.calculateY1(currentValuesArray)
         val y2 = SleepStageClassifier.calculateY2(y0, y1)
-
-        val RRIntervals = SleepStageClassifier.calculateRRIntervals(currentTimestamps,y2)
+        */
+        val RRIntervals = SleepStageClassifier.calculateRRIntervals(currentValuesArray)
         // Convert RRIntervals to a double array
         val RRIntervalsArray = RRIntervals.toLongArray()
         val sdnn = SleepStageClassifier.calculateSDNN(RRIntervalsArray)
@@ -319,11 +328,92 @@ class PingActivity : ComponentActivity() {
         calendar.set(Calendar.MILLISECOND, 999)
         return calendar.timeInMillis
     }
+    /*
+    -------------------------------------- TEST ----------------------------------
+     */
+// Funzione per leggere i dati dal file di testo e inserirli nel database
+    fun insertHeartRateDataFromFile(context: Context, fileName: String) {
+        val db = dbHelper.writableDatabase
 
+        // Legge i dati dal file di testo
+        val assetManager = context.assets
+        val inputStream = assetManager.open(fileName)
+        val reader = BufferedReader(InputStreamReader(inputStream))
+
+        var line: String?
+        var timestamp = System.currentTimeMillis() // Timestamp di partenza
+        val interval = 1000 * 2 // Intervallo di 2 secondi in millisecondi
+
+        try {
+            while (reader.readLine().also { line = it } != null) {
+                line?.let {
+                    val dataParts = it.split(",") // Divide la linea in due parti
+                    if (dataParts.size == 2) {
+                        val bpm = dataParts[1].toFloatOrNull() // Usa solo la parte dopo la virgola
+                        bpm?.let {
+                            // Formatta il timestamp
+                            val formattedTimestamp = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date(timestamp))
+
+                            // Crea un nuovo record
+                            val values = ContentValues().apply {
+                                put(EventManagerContract.SleepEvent.COLUMN_NAME_TIMESTAMP, formattedTimestamp)
+                                put(EventManagerContract.SleepEvent.COLUMN_NAME_EVENT1, bpm)
+                            }
+                            Log.d("DatabaseTest", "Inserisco: $formattedTimestamp, BPM: $bpm")
+
+                            // Inserisce il record nel database
+                            db.insert(EventManagerContract.SleepEvent.TABLE_NAME1, null, values)
+
+                            // Incrementa il timestamp per il prossimo record
+                            timestamp += interval
+                        }
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("DatabaseTest", "Errore durante la lettura del file o l'inserimento nel database", e)
+        } finally {
+            reader.close()
+            db.close()
+        }
+    }
+
+
+    fun clearDatabase(dbHelper: EventManagerDbHelper) {
+        val db = dbHelper.writableDatabase
+        try {
+            db.beginTransaction()
+            val tables = arrayOf(
+                EventManagerContract.SleepEvent.TABLE_NAME1,
+                EventManagerContract.SleepEvent.TABLE_NAME2,
+                EventManagerContract.SleepEvent.TABLE_NAME3
+            )
+
+            for (table in tables) {
+                val deletedRows = db.delete(table, null, null)
+                Log.i("DatabaseClear", "Deleted $deletedRows rows from table $table")
+            }
+
+            db.setTransactionSuccessful()
+        } catch (e: Exception) {
+            Log.e("DatabaseClear", "Error while trying to clear database", e)
+        } finally {
+            db.endTransaction()
+            db.close()
+        }
+    }
+
+
+
+    /*
+    ---------------------------------- FINE TEST ---------------------------------
+     */
     companion object {
         private const val TAG = "PingActivity"
     }
 }
+
+
 
 
 

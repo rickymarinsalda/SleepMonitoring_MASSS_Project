@@ -1,13 +1,14 @@
 package com.example.pingapp.algorithm_1
 
+import android.util.Log
 import kotlin.math.abs
 import kotlin.math.pow
 import kotlin.math.sqrt
 
 class SleepStageClassifier {
     companion object {
-        const val THETA_DEEP = 0.75 // Threshold for deep sleep
-        const val THETA_REM = 1.2 // Threshold for REM sleep
+        const val THETA_DEEP = 0.85 // Threshold for deep sleep ERA 0.75
+        const val THETA_REM = 1.0 // Threshold for REM sleep  ERA 1.2
 
         enum class SleepStage {
             LIGHT,
@@ -42,13 +43,12 @@ class SleepStageClassifier {
             return y2
         }
 
-        fun calculateRRIntervals(timestamps: List<Long>,y2: FloatArray): List<Long> {
+        fun calculateRRIntervals(heartRate: FloatArray): List<Long> {
             val RRIntervals = mutableListOf<Long>()
-            val sortedTimestamps = timestamps.sorted()
 
-            for (i in 0 until sortedTimestamps.size - 1) {
-                val RRInterval = sortedTimestamps[i + 1] - sortedTimestamps[i]
-                if (y2[i] >= 1) {
+            for (hr in heartRate) {
+                if (hr > 0) {
+                    val RRInterval = (60 / hr * 1000).toLong()
                     RRIntervals.add(RRInterval)
                 }
             }
@@ -98,6 +98,8 @@ class SleepStageClassifier {
         fun classifySleepStage(avgSDNN: Double, sdnnValue_nth: Double): SleepStage {
             val thetaDeep = avgSDNN * THETA_DEEP
             val thetaRem = avgSDNN * THETA_REM
+            Log.d("AlgorithmResult", "ThetaRem: ${thetaRem}")
+            Log.d("AlgorithmResult", "thetaDeep: ${thetaDeep}")
 
             when {
                 sdnnValue_nth <= thetaDeep -> return SleepStage.DEEP
