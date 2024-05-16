@@ -15,45 +15,54 @@ class SleepStageClassifier {
             REM
         }
 
-        fun calculateY0(heartRate: DoubleArray): DoubleArray {
-            val y0 = DoubleArray(heartRate.size)
+        fun calculateY0(heartRate: FloatArray): FloatArray {
+            val y0 = FloatArray(heartRate.size)
             for (n in 1 until heartRate.size - 1) {
                 y0[n] = abs(heartRate[n + 1] - heartRate[n - 1])
             }
             return y0
         }
 
-        fun calculateY1(heartRate: DoubleArray): DoubleArray {
-            val y1 = DoubleArray(heartRate.size)
+        fun calculateY1(heartRate: FloatArray): FloatArray {
+            val y1 = FloatArray(heartRate.size)
             for (n in 2 until heartRate.size - 2) {
                 y1[n] = abs(heartRate[n + 2] - 2 * heartRate[n] + heartRate[n - 2])
             }
             return y1
         }
 
-        fun calculateY2(y0: DoubleArray, y1: DoubleArray): DoubleArray {
-            val y2 = DoubleArray(y0.size)
+        fun calculateY2(y0: FloatArray, y1: FloatArray): FloatArray {
+            val y2 = FloatArray(y0.size)
             for (i in y0.indices) {
-                y2[i] = 1.3 * y0[i] + 1.1 * y1[i]
+                y2[i] = (1.3 * y0[i] + 1.1 * y1[i]).toFloat()
                 if (y2[i] < 1.0) {
-                    y2[i] = 0.0 // Set small peaks below the threshold to zero
+                    y2[i] = 0.0F // Set small peaks below the threshold to zero
                 }
             }
             return y2
         }
 
-        fun calculateRRIntervals(timestamps: List<Double>): List<Double> {
-            val RRIntervals = mutableListOf<Double>()
+        fun calculateRRIntervals(timestamps: List<Long>,y2: FloatArray): List<Long> {
+            val RRIntervals = mutableListOf<Long>()
             val sortedTimestamps = timestamps.sorted()
 
             for (i in 0 until sortedTimestamps.size - 1) {
                 val RRInterval = sortedTimestamps[i + 1] - sortedTimestamps[i]
-                RRIntervals.add(RRInterval)
+                if (y2[i] >= 1) {
+                    RRIntervals.add(RRInterval)
+                }
             }
 
             return RRIntervals
         }
 
+        fun calculateMean(values: LongArray): Double {
+            var sum = 0.0
+            for (value in values) {
+                sum += value
+            }
+            return sum / values.size
+        }
         fun calculateMean(values: DoubleArray): Double {
             var sum = 0.0
             for (value in values) {
@@ -62,12 +71,12 @@ class SleepStageClassifier {
             return sum / values.size
         }
 
-        fun calculateSDNN(RRIntervals: DoubleArray): Double {
+        fun calculateSDNN(RRIntervals: LongArray): Double {
             val meanRR = calculateMean(RRIntervals)
             val differences = DoubleArray(RRIntervals.size - 1)
 
             for (i in 0 until RRIntervals.size - 1) {
-                differences[i] = RRIntervals[i + 1] - RRIntervals[i]
+                differences[i] = (RRIntervals[i + 1] - RRIntervals[i]).toDouble()
             }
 
             for (i in differences.indices) {
@@ -86,16 +95,15 @@ class SleepStageClassifier {
             return sum / sdnnValues.size
         }
 
-        fun classifySleepStage(avgSDNN: Double, sdnnValues: DoubleArray): SleepStage {
+        fun classifySleepStage(avgSDNN: Double, sdnnValue_nth: Double): SleepStage {
             val thetaDeep = avgSDNN * THETA_DEEP
             val thetaRem = avgSDNN * THETA_REM
 
-            for (sdnn in sdnnValues) {
-                when {
-                    sdnn <= thetaDeep -> return SleepStage.DEEP
-                    sdnn >= thetaRem -> return SleepStage.REM
-                }
+            when {
+                sdnnValue_nth <= thetaDeep -> return SleepStage.DEEP
+                sdnnValue_nth >= thetaRem -> return SleepStage.REM
             }
+
             return SleepStage.LIGHT
         }
     }

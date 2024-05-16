@@ -1,12 +1,10 @@
 package com.example.pingapp
 
 import android.database.Cursor
-import android.database.sqlite.SQLiteDatabase
 import android.net.Uri
 import android.os.Bundle
 import android.provider.BaseColumns
 import android.util.Log
-import android.view.View
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -29,6 +27,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
+import com.example.pingapp.algorithm_1.SleepStageClassifier
 import com.example.pingapp.db.EventManagerContract
 import com.example.pingapp.db.EventManagerDbHelper
 import com.example.pingapp.ui.theme.SleepMonitoring_MASSS_ProjectTheme
@@ -140,7 +139,13 @@ class PingActivity : ComponentActivity() {
                 }
 
                // val itemIds = queryDatabaseAndExtractIds(dbHelper) // questa è una query d'esempio per vedè se va
+                // Chiamata all'algoritmo
+                val sleepStages = algorithm_1(sleepEvents)
 
+                // Stampa i risultati dell'algoritmo
+                for (stage in sleepStages) {
+                    Log.d("AlgorithmResult", "Sleep stage: ${stage.name}")
+                }
 
 
             } catch (e: Exception) {
@@ -241,7 +246,59 @@ class PingActivity : ComponentActivity() {
         return itemIds
     }
 */
+    fun algorithm_1(sleep_event :List<SleepEvent>): List<SleepStageClassifier.Companion.SleepStage> {
 
+    val sdnn_list = mutableListOf<Double>()
+
+    // Calcola la deviazione standard ogni 5 minuti
+    // ---------------------------------------------------------------------
+    val intervalInMillisec = 5 * 60 * 1000; // 5 minuti in milli
+    var currentIndex = 0
+    while (currentIndex < sleep_event.size) {
+        val currentTimestamp = sleep_event[currentIndex].timestamp
+        val currentValues = mutableListOf<Float>()
+        val currentTimestamps = mutableListOf<Long>()
+
+        // Raccogli i valori nei prossimi 5 minuti
+        while (currentIndex < sleep_event.size && sleep_event[currentIndex].timestamp - currentTimestamp <= intervalInMillisec) {
+            currentValues.add(sleep_event[currentIndex].value)
+            currentTimestamps.add(sleep_event[currentIndex].timestamp)
+            currentIndex++
+        }
+        val currentValuesArray = currentValues.toFloatArray()
+
+        // Calcola la deviazione standard per i valori raccolti
+        //val stdDev = calculateStandardDeviation(currentValues)
+        val y0 = SleepStageClassifier.calculateY0(currentValuesArray)
+        val y1 = SleepStageClassifier.calculateY1(currentValuesArray)
+        val y2 = SleepStageClassifier.calculateY2(y0, y1)
+
+        val RRIntervals = SleepStageClassifier.calculateRRIntervals(currentTimestamps,y2)
+        // Convert RRIntervals to a double array
+        val RRIntervalsArray = RRIntervals.toLongArray()
+        val sdnn = SleepStageClassifier.calculateSDNN(RRIntervalsArray)
+        sdnn_list.add(sdnn)
+
+        Log.d("DeviationCalculation", "Deviazione standard per il periodo ${currentTimestamp} - ${currentTimestamp + intervalInMillisec}: $sdnn")
+
+    }
+
+      val sdnn_array = sdnn_list.toDoubleArray()
+        // Calcola la deviazione standard media (SDNN) degli intervalli RR
+      val avgSDNN = SleepStageClassifier.calculateAverageSDNN(sdnn_array)
+
+    // ---------------------------------------------------------------------
+
+        // Classifica gli intervalli RR in base alla SDNN
+        val sleepStages = mutableListOf<SleepStageClassifier.Companion.SleepStage>()
+        for (sdnn in sdnn_array) {
+            val stage = SleepStageClassifier.classifySleepStage(avgSDNN, sdnn)
+            sleepStages.add(stage)
+        }
+
+    return sleepStages
+
+    }
     fun getStartOfYesterday(timestamp: Long): Long {
         val calendar = Calendar.getInstance()
         calendar.timeInMillis = timestamp
