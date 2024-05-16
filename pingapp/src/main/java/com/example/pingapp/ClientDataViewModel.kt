@@ -17,6 +17,8 @@ import com.google.android.gms.wearable.MessageEvent
 import com.google.android.gms.wearable.PutDataMapRequest
 import com.unipi.sleepmonitoring_masss_library.TimeSeries
 import java.text.SimpleDateFormat
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 
 class ClientDataViewModel(private val dbHelper: EventManagerDbHelper):
     ViewModel(),
@@ -25,78 +27,60 @@ class ClientDataViewModel(private val dbHelper: EventManagerDbHelper):
     CapabilityClient.OnCapabilityChangedListener
 {
     var updateGUI: (series: TimeSeries) -> Unit = {}
+    // Creazione di un pool di thread
+    private val executorService = Executors.newFixedThreadPool(4)
 
     override fun onDataChanged(dataEvents: DataEventBuffer) {
         Log.i("DATA", "ARGGG")
 
+        dataEvents.forEach { event ->
+            Log.i("DATA", "$event from ${event.dataItem.uri.path}")
+            if (event.dataItem.uri.path != "/ping-pong") return@forEach
 
-        dataEvents.forEach {
-            Log.i("DATA", "$it from ${it.dataItem.uri.path}")
-            if(it.dataItem.uri.path != "/ping-pong")
-                return
-
-            val dataMap = DataMapItem.fromDataItem(it.dataItem).dataMap
+            val dataMap = DataMapItem.fromDataItem(event.dataItem).dataMap
             val db = dbHelper.writableDatabase
+
             // Not a time-series
-            if(! dataMap.containsKey("start")) {
+            if (!dataMap.containsKey("start")) {
                 Log.i("DATA", "Not a time-series!")
-                return
+                return@forEach
             }
 
-            if(dataMap.containsKey("data_heart")) { //
-                Log.i("TEST", "SONO ENTRATO IN DATA_HEART")
-                val dataHeart = dataMap.getDataMap("data_heart") ?: DataMap()
-                val series = TimeSeries.deserializeFromGoogle(dataHeart)
-                Log.i("TEST", "SERIES:"+ series)
-                if(series.size() > 0) {
-                    val thread = Thread {
+            // Funzione per processare i dati
+            fun processData(dataKey: String, insertFunction: (SQLiteDatabase, String, Double) -> Unit) {
+                if (dataMap.containsKey(dataKey)) {
+                    Log.i("TEST", "SONO ENTRATO IN $dataKey")
+                    val dataMapItem = dataMap.getDataMap(dataKey) ?: DataMap()
+                    val series = TimeSeries.deserializeFromGoogle(dataMapItem)
 
-                        for (i in 0 until series.size()) {
-                            val datum = series.get(i)
-                            val timestamp = SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(datum.timestamp)
-                            insertDataIntoDatabaseHeartRate(db, timestamp, datum.datum[0].toDouble())
+                    if (series.size() > 0) {
+                        executorService.execute {
+                            for (i in 0 until series.size()) {
+                                val datum = series.get(i)
+                                val timestamp = SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(datum.timestamp)
+                                Log.i("TestTimestamp", "Timestamp: $timestamp")
+                                insertFunction(db, timestamp, datum.datum[0].toDouble())
+                            }
                         }
-                        db.close()
+                    } else {
+                        Log.i("DATA", "No data received")
                     }
-                    thread.start()
                 } else {
-                    Log.i("DATA", "No data received")
+                    Log.i("DATA", "Missing $dataKey in DataMap")
                 }
-            } else {
-                Log.i("DATA", "Missing data_heart in DataMap")
             }
 
-            if(dataMap.containsKey("data_accel")) {
-                Log.i("TEST", "SONO ENTRATO IN DATA_ACCEL")
+            processData("data_heart", ::insertDataIntoDatabaseHeartRate)
+            processData("data_accel", ::insertDataIntoDatabaseAccel)
 
-                val dataHeart = dataMap.getDataMap("data_accel") ?: DataMap()
-                val series = TimeSeries.deserializeFromGoogle(dataHeart)
-                Log.i("TEST", "SERIES:"+ series)
-                if(series.size() > 0) {
-                    val thread = Thread {
-
-                        for (i in 0 until series.size()) {
-                            val datum = series.get(i)
-                            val timestamp = SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(datum.timestamp)
-                            insertDataIntoDatabaseAccel(db, timestamp, datum.datum[0].toDouble())
-                        }
-                        db.close()
-
-                    }
-                    thread.start()
-                } else {
-                    Log.i("DATA", "No data received")
-                }
-            } else {
-                Log.i("DATA", "Missing data_accel in DataMap")
-            }
-
-
-
+            // Aggiornamento dell'interfaccia utente
             updateGUI(TimeSeries.deserializeFromGoogle(dataMap.getDataMap("data_accel")!!))
+
+            // Chiusura del database dopo che tutti i thread hanno terminato
+            executorService.shutdown()
+            executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS)
+            db.close()
         }
-
-
     }
 
     override fun onMessageReceived(p0: MessageEvent) {

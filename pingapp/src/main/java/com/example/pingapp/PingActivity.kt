@@ -39,6 +39,9 @@ import com.unipi.sleepmonitoring_masss_library.TimeSeries
 import kotlinx.coroutines.*
 import java.text.SimpleDateFormat
 import java.time.Instant
+import java.util.Calendar
+import java.util.Date
+import java.util.Locale
 
 class PingActivity : ComponentActivity() {
     private val dataClient by lazy { Wearable.getDataClient(this) }
@@ -110,13 +113,35 @@ class PingActivity : ComponentActivity() {
             }
         }
     }
-
+    data class SleepEvent(val timestamp: Long, val value: Float)
     private fun onQueryClick() {
         // Avvia un'operazione asincrona per eseguire la query del database
         lifecycleScope.launch {
             try {
-                Log.d("DatabaseTest", "ENTRA?!?")
-                val itemIds = queryDatabaseAndExtractIds(dbHelper)
+
+                val currentDate = System.currentTimeMillis() // data corrente in millisecondi
+                val startOfYesterday = getStartOfYesterday(currentDate)
+                val endOfToday = getEndOfDay(currentDate)
+
+                Log.d("DatabaseTest", "Start of yesterday: $startOfYesterday")
+                Log.d("DatabaseTest", "End of today: $endOfToday")
+
+                val sleepEvents = queryDatabaseAndExtractEvents(dbHelper, startOfYesterday, endOfToday)
+                /*
+                    Qui adesso devo inserire in qualche modo l'algoritmo, che prende in ingresso gli sleepEvents
+                    e poi restituisce il risultato dell'algoritmo utilizando SleepStageClassifier
+                */
+                for (event in sleepEvents) {
+                    val timestamp = event.timestamp
+                    val value = event.value.toDouble()
+                    val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+                    val timestamp_stringa = dateFormat.format(Date(timestamp))
+                    Log.d("DatabaseTest", "Timestamp: $timestamp_stringa, Value: $value")
+                }
+
+               // val itemIds = queryDatabaseAndExtractIds(dbHelper) // questa è una query d'esempio per vedè se va
+
+
 
             } catch (e: Exception) {
                 // Gestisci eventuali eccezioni qui
@@ -124,6 +149,7 @@ class PingActivity : ComponentActivity() {
             }
         }
     }
+/*
     fun queryDatabase(dbHelper: EventManagerDbHelper): Deferred<Cursor?> = CoroutineScope(Dispatchers.IO).async {
         val db = dbHelper.readableDatabase
         Log.d("DatabaseTest", "ENTRATO DENTRO QUERYY DATABASE?!?") // query d'esempio dell'accelerazione
@@ -142,6 +168,64 @@ class PingActivity : ComponentActivity() {
         )
     }
 
+    */
+
+
+    fun queryDatabase(dbHelper: EventManagerDbHelper, start: Long, end: Long): Deferred<Cursor?> = CoroutineScope(Dispatchers.IO).async {
+        val db = dbHelper.readableDatabase
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+
+        val startString = dateFormat.format(Date(start))
+        val endString = dateFormat.format(Date(end))
+        val projection = arrayOf(BaseColumns._ID, EventManagerContract.SleepEvent.COLUMN_NAME_TIMESTAMP, EventManagerContract.SleepEvent.COLUMN_NAME_EVENT1)
+        val selection = "${EventManagerContract.SleepEvent.COLUMN_NAME_TIMESTAMP} >= ? AND ${EventManagerContract.SleepEvent.COLUMN_NAME_TIMESTAMP} <= ?" // Filtra in modo che sia una data compresa tra ieri e oggi
+        val selectionArgs = arrayOf(startString, endString)
+        val sortOrder = "${EventManagerContract.SleepEvent.COLUMN_NAME_TIMESTAMP} "
+        return@async db.query(
+            EventManagerContract.SleepEvent.TABLE_NAME1,
+            projection,
+            selection,
+            selectionArgs,
+            null,
+            null,
+            sortOrder
+        )
+    }
+    suspend fun queryDatabaseAndExtractEvents(dbHelper: EventManagerDbHelper, startOfYesterday: Long, endOfToday: Long): List<SleepEvent> {
+        val sleepEvents = mutableListOf<SleepEvent>()
+        val cursor = queryDatabase(dbHelper, startOfYesterday, endOfToday).await()
+        cursor?.use {
+            while (it.moveToNext()) {
+                val timestampString = it.getString(it.getColumnIndexOrThrow(EventManagerContract.SleepEvent.COLUMN_NAME_TIMESTAMP)) // QUI LA DATA È STRINGA
+                val value = it.getFloat(it.getColumnIndexOrThrow(EventManagerContract.SleepEvent.COLUMN_NAME_EVENT1))
+
+                // si converte la stringa del timestamp in millisecondi
+                val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+                val date = dateFormat.parse(timestampString)
+                val timestamp = date?.time ?: 0L // QUI LA DATA È IN MILLISEC
+
+                sleepEvents.add(SleepEvent(timestamp, value))
+            }
+        }
+
+        return sleepEvents
+    }
+
+/*
+    suspend fun queryDatabaseAndExtractIds(dbHelper: EventManagerDbHelper, startOfYesterday: Long, endOfToday: Long): List<Long> {
+        val itemIds = mutableListOf<Long>()
+        val cursor = queryDatabase(dbHelper, startOfYesterday, endOfToday).await()
+        cursor?.use {
+            while (it.moveToNext()) {
+                val itemId = it.getLong(it.getColumnIndexOrThrow(BaseColumns._ID))
+                itemIds.add(itemId)
+                Log.d("DatabaseTest", "ID ottenuto dalla query: $itemId")
+            }
+        }
+        return itemIds
+    }
+    */
+    /*
     suspend fun queryDatabaseAndExtractIds(dbHelper: EventManagerDbHelper): List<Long> {
         val itemIds = mutableListOf<Long>()
         val cursor = queryDatabase(dbHelper).await()
@@ -155,6 +239,28 @@ class PingActivity : ComponentActivity() {
         }
 
         return itemIds
+    }
+*/
+
+    fun getStartOfYesterday(timestamp: Long): Long {
+        val calendar = Calendar.getInstance()
+        calendar.timeInMillis = timestamp
+        calendar.add(Calendar.DAY_OF_YEAR, -1) // Sottraggo un giorno
+        calendar.set(Calendar.HOUR_OF_DAY, 0)
+        calendar.set(Calendar.MINUTE, 0)
+        calendar.set(Calendar.SECOND, 0)
+        calendar.set(Calendar.MILLISECOND, 0)
+        return calendar.timeInMillis
+    }
+
+    fun getEndOfDay(timestamp: Long): Long {
+        val calendar = Calendar.getInstance()
+        calendar.timeInMillis = timestamp
+        calendar.set(Calendar.HOUR_OF_DAY, 23)
+        calendar.set(Calendar.MINUTE, 59)
+        calendar.set(Calendar.SECOND, 59)
+        calendar.set(Calendar.MILLISECOND, 999)
+        return calendar.timeInMillis
     }
 
     companion object {
@@ -211,7 +317,10 @@ fun TimeSeriesView(series: TimeSeries) {
     val column1Weight = .55f // 30%
     val column2Weight = 1 - column1Weight // 70%
     // The LazyColumn will be our table. Notice the use of the weights below
-    LazyColumn(Modifier.fillMaxSize().padding(16.dp)) {
+    LazyColumn(
+        Modifier
+            .fillMaxSize()
+            .padding(16.dp)) {
         // Here is the header
         item {
             Row(Modifier.background(Color.Gray)) {
