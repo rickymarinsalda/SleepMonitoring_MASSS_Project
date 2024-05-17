@@ -1,12 +1,21 @@
 package com.example.pingapp
 
+import android.R
+import android.R.attr.bitmap
+import android.R.attr.data
 import android.content.ContentValues
 import android.content.Context
+import android.content.ContextWrapper
+import android.content.pm.PackageManager
 import android.database.Cursor
+import android.graphics.Bitmap
+import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
 import android.os.Bundle
+import android.os.Environment
 import android.provider.BaseColumns
 import android.util.Log
+import android.view.View
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -28,6 +37,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import com.example.pingapp.algorithm_1.SleepStageClassifier
 import com.example.pingapp.db.EventManagerContract
@@ -39,12 +50,17 @@ import com.google.android.gms.wearable.Wearable
 import com.unipi.sleepmonitoring_masss_library.TimeSeries
 import kotlinx.coroutines.*
 import java.io.BufferedReader
+import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
 import java.io.InputStreamReader
+import java.io.OutputStreamWriter
 import java.text.SimpleDateFormat
 import java.time.Instant
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+
 
 class PingActivity : ComponentActivity() {
     private val dataClient by lazy { Wearable.getDataClient(this) }
@@ -78,12 +94,26 @@ class PingActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+
+        if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            Log.d(TAG, "Requirin permission!")
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(android.Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                1)
+        } else {
+            Log.d(TAG, "You have already permission!")
+        }
+
+
         dbHelper = EventManagerDbHelper(this) // inizializzo db
 
        // clearDatabase(dbHelper) // PULISCE IL DB
         //insertHeartRateDataFromFile(this, "8692923_heartrate.txt") // AGGIUNGE AL DB ROBA DA FILE IN /ASSETS
 
         // Gets the data repository in write mode
+
 
         clientDataViewModel.updateGUI = ::onNewTimeSeries
         //enableEdgeToEdge()
@@ -149,6 +179,33 @@ class PingActivity : ComponentActivity() {
                 // Chiamata all'algoritmo
 
                 val sleepStages = algorithm_1(sleepEvents)
+
+                // Creazione del file di output
+                // Percorso della directory principale della scheda SD
+                val sdCardDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS)
+                val outputFileName = "output_sonno.txt"
+
+                Log.d(TAG, "====================" + sdCardDirectory.toString())
+
+                // Creazione del file di output nella directory della scheda SD
+                val outputFile = File(sdCardDirectory, outputFileName)
+
+
+                // Scrittura dei risultati su file
+                FileOutputStream(outputFile).use { fileOutputStream ->
+                    OutputStreamWriter(fileOutputStream).use { outputStreamWriter ->
+                        // Scrittura dei risultati nel file
+                        var data_stamp = 0
+                        for (stage in sleepStages) {
+                            val line = "${data_stamp} ${stage.name}\n"
+                            outputStreamWriter.write(line)
+                            data_stamp += 5 * 60
+                        }
+                    }
+                }
+
+
+
 
                 // Stampa i risultati dell'algoritmo
                 for (stage in sleepStages) {
