@@ -9,6 +9,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.widget.LinearLayout
 import com.github.mikephil.charting.charts.BarChart
+import com.github.mikephil.charting.components.Legend
+import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.data.BarData
 import com.github.mikephil.charting.data.BarDataSet
 import com.github.mikephil.charting.data.BarEntry
@@ -24,6 +26,14 @@ import java.util.Random
 class SleepBarChart(context: Context?, attrs: AttributeSet?) : LinearLayout(context, attrs) {
     // Declare startTime as a global variable
     private var startTime: Calendar = Calendar.getInstance()
+    private lateinit var endTime : Calendar
+    private var startTimeAsleep: Long = -1
+    private var deepSleepTotal: Double = 0.0
+    private var lightSleepTotal: Double = 0.0
+    private var remSleepTotal: Double = 0.0
+    private var awakeTotal: Double = 0.0
+    private var sleepPhaseDuration = 1800000L// 30 minutes
+
     init {
         init()
     }
@@ -55,55 +65,57 @@ class SleepBarChart(context: Context?, attrs: AttributeSet?) : LinearLayout(cont
         if (barChart != null) {
 
             // No description text
-            //barChart.description.isEnabled = false
+            barChart.description.isEnabled = false
 
             // Disable grid background
-            //barChart.setDrawGridBackground(false)
+            barChart.setDrawGridBackground(false)
 
             // Enable touch gestures
-            //barChart.setTouchEnabled(true)
+            barChart.setTouchEnabled(true)
 
             // Enable scaling and dragging
-            //barChart.isDragEnabled = true
-            //barChart.setScaleEnabled(true)
+            barChart.isDragEnabled = true
+            barChart.setScaleEnabled(true)
 
             // If disabled, scaling can be done on x- and y-axis separately
-            //barChart.setPinchZoom(true)
+            barChart.setPinchZoom(true)
 
             barChart.setBackgroundColor(color)
             barChart.setLayerType(View.LAYER_TYPE_SOFTWARE, null)
 
-            // Add data
-            barChart.setData(data)
 
             // Get and handle the legend
-            //val legend: Legend = barChart.legend
-            //legend.isEnabled = true
+            val legend: Legend = barChart.legend
+            legend.isEnabled = false
             //legend.textColor = Color.WHITE
 
-            //barChart.xAxis.isEnabled = true
-            //barChart.axisLeft.isEnabled = true
+            barChart.xAxis.isEnabled = true
+            barChart.axisLeft.isEnabled = true
 
             val xAxis = barChart.xAxis
             barChart.xAxis.valueFormatter = object : ValueFormatter() {
                 override fun getFormattedValue(value: Float): String {
                     val mFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
-                    val millis = startTime.timeInMillis + value.toLong()
+                    val millis = startTime.timeInMillis + (value.toLong() * sleepPhaseDuration)
                     return mFormat.format(Date(millis))
                 }
             }
             xAxis.setDrawLabels(true)
-            //xAxis.setDrawAxisLine(false)
-            //xAxis.setDrawGridLines(true)
-            //xAxis.position = XAxis.XAxisPosition.BOTTOM
+            xAxis.setDrawAxisLine(false)
+            xAxis.setDrawGridLines(true)
+            xAxis.position = XAxis.XAxisPosition.BOTTOM
+
+            // Add data
+            barChart.setData(data)
 
             val yAxis = barChart.axisLeft
             // yAxis.valueFormatter = SleepTypeValueFormatter()
-//            yAxis.setDrawLabels(true)
-//            yAxis.setDrawAxisLine(true)
-//            yAxis.setDrawGridLines(false)
-//            yAxis.axisMinimum = -0.5f
-//            yAxis.axisMaximum = 3.5f
+            yAxis.setDrawLabels(true)
+            yAxis.setDrawAxisLine(true)
+            yAxis.setDrawGridLines(false)
+            //yAxis.axisMinimum = -0.5f
+            //yAxis.axisMinimum = 0f
+            //yAxis.axisMaximum = 3.5f
 
             val labels = listOf("Leggero", "REM", "Profondo", "Veglia")
             yAxis.valueFormatter = object : ValueFormatter() {
@@ -116,58 +128,20 @@ class SleepBarChart(context: Context?, attrs: AttributeSet?) : LinearLayout(cont
                     }
                 }
             }
-            //yAxis.granularity = 1f
-            //yAxis.setCenterAxisLabels(true)
+            yAxis.granularity = 1f
+            yAxis.setCenterAxisLabels(true)
 
-            //barChart.axisRight.isEnabled = false
+            barChart.axisRight.isEnabled = false
             barChart.animateX(2500)
 
             barChart.xAxis.textColor = Color.WHITE
             barChart.axisLeft.textColor = Color.WHITE
-            //barChart.setViewPortOffsets(150F, 50F, 100F, 100F)
+            barChart.setViewPortOffsets(150F, 50F, 100F, 100F)
 
-            //barChart.setDrawBorders(false)
+            barChart.setDrawBorders(false)
             barChart.invalidate()
         }
     }
-
-//    private fun generateBarEntries(): ArrayList<BarEntry> {
-//        val values = ArrayList<BarEntry>()
-//        val startTime = Calendar.getInstance()
-//        startTime.set(2024, Calendar.MAY, 7, 22, 0) // Start date and time of sleep
-//        val endTime = Calendar.getInstance()
-//        endTime.set(2024, Calendar.MAY, 8, 6, 0) // End date and time of sleep
-//
-//        val sleepPhaseDuration = 30 * 60 * 1000 // 30 minutes
-//
-//        val random = Random()
-//
-//        val currentTime = startTime.clone() as Calendar
-//        while (currentTime.before(endTime)) {
-//            //val timestamp = currentTime.timeInMillis - startTime.timeInMillis
-//            val timestamp = currentTime.timeInMillis
-//
-//
-//            // Generazione casuale del tipo di sonno
-//            val sleepType = random.nextInt(4)
-//
-//            // Adding data to the list of values
-//            //val fTimestamp = timestamp.toFloat() / (1000 * 60)
-//            val fTimestamp = timestamp.toFloat()
-//
-//            Log.d("TIMESTAMP", "Timestamp -> $fTimestamp")
-//
-//            //TODO FIXME
-//            val fSleepType = sleepType.toFloat()
-//            val newEntry = BarEntry(fTimestamp, fSleepType)
-//            values.add(newEntry)
-//
-//            // Advancing time by a fixed duration for each sleep phase
-//            currentTime.add(Calendar.MILLISECOND,sleepPhaseDuration)
-//
-//        }
-//        return values
-//    }
 
     private fun generateRandomData(startTime: Long, endTime: Long, phase: Long): ArrayList<BarEntry> {
         val entries = ArrayList<BarEntry>()
@@ -189,21 +163,44 @@ class SleepBarChart(context: Context?, attrs: AttributeSet?) : LinearLayout(cont
 
         startTime = Calendar.getInstance()
         startTime.set(2024, Calendar.MAY, 7, 22, 0) // Start date and time of sleep
-        val endTime = Calendar.getInstance()
         endTime.set(2024, Calendar.MAY, 8, 6, 0) // End date and time of sleep
-
-        val sleepPhaseDuration = 1800000L// 30 minutes
 
         val values = generateRandomData(startTime.timeInMillis, endTime.timeInMillis, sleepPhaseDuration)
 
         val barDataSet = BarDataSet(values, "The year 2017")
 
-        barDataSet.color = Color.BLUE // set bar color to blue
-
         val data = BarData(barDataSet)
-        //data.setValueTextSize(10f)
+        data.setValueTextSize(0f)
         data.barWidth = 0.9f
 
         return data
+    }
+
+    fun getStartTime() : Calendar {
+        return startTime
+    }
+
+    fun getEndTime() : Calendar {
+        return endTime
+    }
+
+    fun getStartTimeAsleep(): Long {
+        return startTimeAsleep
+    }
+
+    fun getDeepSleepTotal(): Double {
+        return deepSleepTotal
+    }
+
+    fun getLightSleepTotal(): Double {
+        return lightSleepTotal
+    }
+
+    fun getRemSleepTotal(): Double {
+        return remSleepTotal
+    }
+
+    fun getAwakeTotal(): Double {
+        return awakeTotal
     }
 }

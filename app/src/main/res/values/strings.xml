@@ -32,4 +32,5 @@
     <string name="good_night">Good night!</string>
     <string name="see_you">recording your sleep data…</string>
     <string name="moon_recording_icon">Moon recording icon</string>
+    <string name="your_last_week_of_sleep">Your last week of sleep</string>
 </resources>
