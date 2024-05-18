@@ -4,7 +4,6 @@ import android.graphics.Color
 import android.graphics.Typeface
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -15,6 +14,7 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
 import com.unipi.sleepmonitoringproject.R
 import com.unipi.sleepmonitoringproject.databinding.FragmentStatsBinding
 import com.unipi.sleepmonitoringproject.stats.SleepBarChart
@@ -29,8 +29,15 @@ class StatsFragment : Fragment() {
 
     private val dataAvailable = true
 
+    // Assuming bar_chart.xml is a layout for SleepBarChart and
+    // we are inflating it programmatically.
+    private lateinit var barChart: SleepBarChart
+    private lateinit var barChartLayout: View
+
     // This property is only valid between onCreateView and onDestroyView.
     private val binding get() = _binding!!
+
+    private lateinit var root: View
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreateView(
@@ -38,26 +45,33 @@ class StatsFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+        ViewModelProvider(this).get(StatsViewModel::class.java)
+
         _binding = FragmentStatsBinding.inflate(inflater, container, false)
 
-        val root: View = binding.root
-        Log.d("DEBUG", "root -> $root")
+        root = binding.root
 
-        showLastNight(root)
+        //barChart = SleepBarChart(root)
+        // Inflate the bar_chart layout and initialize SleepBarChart
+        barChartLayout = inflater.inflate(R.layout.bar_chart, container, false)
+        barChart = SleepBarChart(barChartLayout)
+
+        showLastNight()
 
         return root
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    private fun showLastNight(root:View) {
-        val constraintLayout: ConstraintLayout = root.findViewById(R.id.sleep_bar_chart)
+    private fun showLastNight() {
+
+        val constraintLayout: ConstraintLayout = barChartLayout.findViewById(R.id.bar_chart_parent)
 
         /* If the user collected some data */
         if(dataAvailable) {
 
             /* Creation of the title */
             val lastNightTitle = TextView(context)
-            lastNightTitle.id = R.id.lastNightTitle
+            lastNightTitle.id = R.id.barlastNightTitle
             lastNightTitle.text = getString(R.string.your_last_week_of_sleep)
             lastNightTitle.textAlignment = TextView.TEXT_ALIGNMENT_CENTER
             lastNightTitle.setTextColor(Color.WHITE)
@@ -73,7 +87,7 @@ class StatsFragment : Fragment() {
 
             /* Creation of the current date TextView */
             val currentDateTextView = TextView(context)
-            currentDateTextView.id = R.id.currentDateTextView
+            currentDateTextView.id = R.id.barcurrentDateTextView
             val currentDate = LocalDate.now()
             val formatter = DateTimeFormatter.ofPattern("dd MMMM yyyy")
             val currentDateText = currentDate.format(formatter)
@@ -117,37 +131,36 @@ class StatsFragment : Fragment() {
 
             /* Creation of the sleep line chart */
             //val lineChart = SleepLineChart(root)
-
-            // Assuming bar_chart.xml is a layout for SleepBarChart and
-            // we are inflating it programmatically.
-            val barChart = SleepBarChart(context, null)
+            //val barChart = SleepBarChart(root)
 
             /* Set sleep informations views as visible */
-            val sleepInfoLayout: LinearLayout = root.findViewById(R.id.sleep_info_layout)
+            val sleepInfoLayout: LinearLayout = barChartLayout.findViewById(R.id.bar_sleep_info_layout)
             sleepInfoLayout.visibility = View.VISIBLE
 
             /* Total time in bed */
             val startTime = barChart.getStartTime().timeInMillis
             val endTime = barChart.getEndTime().timeInMillis
             val totTime = (endTime - startTime)/3600000.0
-            val totTimeTextView: TextView = root.findViewById(R.id.time_in_bed)
+            val totTimeTextView: TextView = barChartLayout.findViewById(R.id.bar_time_in_bed)
             totTimeTextView.text = getString(R.string.time_asleep, totTime)
 
             /* Time to fall asleep */
             val startTimeAsleep = barChart.getStartTimeAsleep()
             val differenceInMillis = startTimeAsleep - startTime
             val totTimeToFallAsleep = ((differenceInMillis / (1000.0 * 60.0)) * 10.0).roundToInt() / 10.0
-            val timeToFallAsleepTextView: TextView = root.findViewById(R.id.time_to_fall_asleep)
+            val timeToFallAsleepTextView: TextView = barChartLayout.findViewById(R.id.bar_time_to_fall_asleep)
             timeToFallAsleepTextView.text = getString(R.string.to_fall_asleep, totTimeToFallAsleep)
 
             // Assuming there is a container or a placeholder in fragment_stats.xml to add the bar chart.
-            binding.barChartContainer.addView(barChart)
+            //binding.barChartContainer.addView(barChart)
+            binding.barChartContainer.addView(barChartLayout)
+            //binding.barChartContainer.addView(otherLayout)
             /* Creation of the pie chart */
             SleepPieChart(root)
         }
         else {
             val noDataTextView = TextView(context)
-            noDataTextView.id = R.id.noDataTextView
+            noDataTextView.id = R.id.barnoDataTextView
             noDataTextView.text = getString(R.string.home_title_before_rec)
             noDataTextView.textAlignment = TextView.TEXT_ALIGNMENT_CENTER
             noDataTextView.setTextColor(Color.WHITE)

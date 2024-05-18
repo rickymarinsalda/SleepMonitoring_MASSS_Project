@@ -2,7 +2,6 @@ package com.unipi.sleepmonitoringproject.stats
 
 import android.graphics.Color
 import android.graphics.Typeface
-import android.util.Log
 import android.view.View
 import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.components.XAxis
@@ -176,9 +175,7 @@ class SleepLineChart(rootView: View) {
             values.add(newEntry)
 
             // Avanzamento del tempo di una durata fissa per ogni fase del sonno
-            Log.d("CURTIME", "Before the added time -> ${currentTime.timeInMillis}")
             currentTime.timeInMillis += sleepPhaseDuration
-            Log.d("CURTIME", "After the added time -> ${currentTime.timeInMillis}")
 
         }
         return values

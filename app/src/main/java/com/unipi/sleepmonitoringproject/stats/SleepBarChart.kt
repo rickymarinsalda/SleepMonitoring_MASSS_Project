@@ -1,13 +1,8 @@
 package com.unipi.sleepmonitoringproject.stats
 
-import android.content.Context
 import android.graphics.Color
 import android.graphics.Typeface
-import android.util.AttributeSet
-import android.util.Log
-import android.view.LayoutInflater
 import android.view.View
-import android.widget.LinearLayout
 import com.github.mikephil.charting.charts.BarChart
 import com.github.mikephil.charting.components.Legend
 import com.github.mikephil.charting.components.XAxis
@@ -23,10 +18,10 @@ import java.util.Locale
 import java.util.Random
 
 
-class SleepBarChart(context: Context?, attrs: AttributeSet?) : LinearLayout(context, attrs) {
+class SleepBarChart(view: View){
     // Declare startTime as a global variable
     private var startTime: Calendar = Calendar.getInstance()
-    private lateinit var endTime : Calendar
+    private var endTime : Calendar = Calendar.getInstance()
     private var startTimeAsleep: Long = -1
     private var deepSleepTotal: Double = 0.0
     private var lightSleepTotal: Double = 0.0
@@ -34,25 +29,21 @@ class SleepBarChart(context: Context?, attrs: AttributeSet?) : LinearLayout(cont
     private var awakeTotal: Double = 0.0
     private var sleepPhaseDuration = 1800000L// 30 minutes
 
+    val id: Int = R.id.bar_chart
+
+    private var barChart: BarChart = view.findViewById(R.id.bar_chart)
+
     init {
         init()
     }
 
     private fun init() {
         // Inflate the entire XML layout
-        LayoutInflater.from(context).inflate(R.layout.bar_chart, this, true)
 
         // Find the BarChart by its ID
-        val barChart: BarChart = rootView.findViewById(R.id.bar_chart)
-        //barChart.setNoDataText("")
-        //barChart.invalidate()
-
-
         val mTf: Typeface = Typeface.DEFAULT
 
         val data: BarData = getDataFromActivity()
-
-        Log.d("SBORRA", "data -> $data")
 
         data.setValueTypeface(mTf)
 
@@ -161,7 +152,6 @@ class SleepBarChart(context: Context?, attrs: AttributeSet?) : LinearLayout(cont
 
     private fun getDataFromActivity(): BarData {
 
-        startTime = Calendar.getInstance()
         startTime.set(2024, Calendar.MAY, 7, 22, 0) // Start date and time of sleep
         endTime.set(2024, Calendar.MAY, 8, 6, 0) // End date and time of sleep
 

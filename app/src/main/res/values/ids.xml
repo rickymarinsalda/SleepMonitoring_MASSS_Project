@@ -6,4 +6,10 @@
     <item name="totTimeNumberTextView" type="id" />
     <item name="pillowsIcon" type="id" />
     <item name="noDataTextView" type="id" />
+    <item type="id" name="barlastNightTitle" />
+    <item name="barcurrentDateTextView" type="id" />
+    <item name="bartotTimeTextView" type="id" />
+    <item name="bartotTimeNumberTextView" type="id" />
+    <item name="barpillowsIcon" type="id" />
+    <item name="barnoDataTextView" type="id" />
 </resources>
