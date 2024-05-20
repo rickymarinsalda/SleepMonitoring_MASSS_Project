@@ -110,8 +110,9 @@ class PingActivity : ComponentActivity() {
 
         dbHelper = EventManagerDbHelper(this) // inizializzo db
 
-        clearDatabase(dbHelper) // PULISCE IL DB
-        insertHeartRateDataFromFile(this, "8692923_heartrate.txt") // AGGIUNGE AL DB ROBA DA FILE IN /ASSETS
+        //clearDatabase(dbHelper) // PULISCE IL DB
+        //insertHeartRateDataFromFile(this, "8692923_heartrate.txt") // AGGIUNGE AL DB ROBA DA FILE IN /ASSETS
+        //insertHeartRateDataFromFile(this, "9618981_heartrate.txt") // AGGIUNGE AL DB ROBA DA FILE IN /ASSETS
 
         // Gets the data repository in write mode
 
