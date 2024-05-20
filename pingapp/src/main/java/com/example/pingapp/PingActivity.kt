@@ -110,8 +110,8 @@ class PingActivity : ComponentActivity() {
 
         dbHelper = EventManagerDbHelper(this) // inizializzo db
 
-        //clearDatabase(dbHelper) // PULISCE IL DB
-        //insertHeartRateDataFromFile(this, "8692923_heartrate.txt") // AGGIUNGE AL DB ROBA DA FILE IN /ASSETS
+        clearDatabase(dbHelper) // PULISCE IL DB
+        insertHeartRateDataFromFile(this, "8692923_heartrate.txt") // AGGIUNGE AL DB ROBA DA FILE IN /ASSETS
 
         // Gets the data repository in write mode
 
@@ -154,7 +154,7 @@ class PingActivity : ComponentActivity() {
     private fun onQueryClick() {
         // Avvia un'operazione asincrona per eseguire la query del database
         lifecycleScope.launch {
-            try {
+            //try {
 
                 val currentDate = System.currentTimeMillis() // data corrente in millisecondi
                 val startOfYesterday = getStartOfYesterday(currentDate)
@@ -179,7 +179,29 @@ class PingActivity : ComponentActivity() {
                // val itemIds = queryDatabaseAndExtractIds(dbHelper) // questa è una query d'esempio per vedè se va
                 // Chiamata all'algoritmo
 
-                val sleepStages = algorithm_1(sleepEvents)
+                //val sleepStages = algorithm_1(sleepEvents)
+                val classifier = Classifier(context = this@PingActivity)
+
+                var sleepStages = intArrayOf()
+
+                for (i in sleepEvents.indices step 5) {
+                    if (i + 4 >= sleepEvents.size)
+                        continue
+
+                    val bpms = floatArrayOf(
+                        sleepEvents[i+0].value,
+                        sleepEvents[i+1].value,
+                        sleepEvents[i+2].value,
+                        sleepEvents[i+3].value,
+                        sleepEvents[i+4].value,
+                        )
+
+                    val assurdo = classifier.doInference(bpms)
+
+                    Log.d(TAG, "Assurdo[$i] -> $assurdo")
+
+                    sleepStages += assurdo
+                }
 
                 // Creazione del file di output
                 // Percorso della directory principale della scheda SD
@@ -198,7 +220,7 @@ class PingActivity : ComponentActivity() {
                         // Scrittura dei risultati nel file
                         var data_stamp = 0
                         for (stage in sleepStages) {
-                            val line = "${data_stamp} ${stage.name}\n"
+                            val line = "${data_stamp} ${stage}\n"
                             outputStreamWriter.write(line)
                             data_stamp += 5 * 60
                         }
@@ -210,14 +232,14 @@ class PingActivity : ComponentActivity() {
 
                 // Stampa i risultati dell'algoritmo
                 for (stage in sleepStages) {
-                    Log.d("AlgorithmResult", "Sleep stage: ${stage.name}")
+                    Log.d("AlgorithmResult", "Sleep stage: ${stage}")
                 }
 
 
-            } catch (e: Exception) {
+            //} catch (e: Exception) {
                 // Gestisci eventuali eccezioni qui
-                Log.e("DatabaseTest", "Errore durante l'esecuzione della query: ${e.message}")
-            }
+            //    Log.e("DatabaseTest", "Errore durante l'esecuzione della query: ${e.message}")
+            //}
         }
     }
 /*
