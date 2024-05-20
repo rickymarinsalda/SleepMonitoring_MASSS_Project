@@ -18,6 +18,9 @@ composeMaterial = "1.2.1"
 composeFoundation = "1.2.1"
 activityCompose = "1.7.2"
 coreSplashscreen = "1.0.1"
+lifecycleRuntimeKtx = "2.7.0"
+playServicesWearableVersion = "18.1.0"
+activityKtx = "1.9.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -42,8 +45,14 @@ androidx-compose-material = { group = "androidx.wear.compose", name = "compose-m
 androidx-compose-foundation = { group = "androidx.wear.compose", name = "compose-foundation", version.ref = "composeFoundation" }
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
 androidx-core-splashscreen = { group = "androidx.core", name = "core-splashscreen", version.ref = "coreSplashscreen" }
+androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycleRuntimeKtx" }
+androidx-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
+androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
+gms-play-services-wearable = { group = "com.google.android.gms", name = "play-services-wearable", version.ref = "playServicesWearableVersion" }
+androidx-activity-ktx = { group = "androidx.activity", name = "activity-ktx", version.ref = "activityKtx" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
 jetbrainsKotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+androidLibrary = { id = "com.android.library", version.ref = "agp" }
 

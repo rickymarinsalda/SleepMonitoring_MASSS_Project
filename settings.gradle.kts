@@ -22,3 +22,7 @@ dependencyResolutionManagement {
 rootProject.name = "SleepMonitoring_MASSS_Project"
 include(":app")
 include(":wear")
+include(":pingapp")
+include(":wearping2")
+include(":wearapp3")
+include(":sleeplib")
