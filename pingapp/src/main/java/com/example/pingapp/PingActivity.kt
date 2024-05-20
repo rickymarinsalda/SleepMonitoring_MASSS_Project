@@ -425,8 +425,12 @@ class PingActivity : ComponentActivity() {
                         throw Exception("bruh")
                     }
 
-                    val timestamp = (dataParts[0].toFloat() * 1000f).toLong() + timestamp_base;
+                    val timestamp_grezzo = (dataParts[0].toFloat() * 1000f).toLong();
+                    val timestamp =  timestamp_grezzo + timestamp_base;
                     val bpm = dataParts[1].toFloat() // Usa solo la parte dopo la virgola
+
+                    if (timestamp_grezzo < 0.0f)
+                        return@let
 
                     if (bpm.isNaN() or bpm.isInfinite())
                         throw Exception("BRUH IN VIRGOLA MOBILE")
