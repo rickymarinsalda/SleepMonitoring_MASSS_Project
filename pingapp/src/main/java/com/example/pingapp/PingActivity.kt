@@ -60,6 +60,7 @@ import java.time.Instant
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import kotlin.math.floor
 
 
 class PingActivity : ComponentActivity() {
@@ -109,7 +110,7 @@ class PingActivity : ComponentActivity() {
 
         dbHelper = EventManagerDbHelper(this) // inizializzo db
 
-       // clearDatabase(dbHelper) // PULISCE IL DB
+        //clearDatabase(dbHelper) // PULISCE IL DB
         //insertHeartRateDataFromFile(this, "8692923_heartrate.txt") // AGGIUNGE AL DB ROBA DA FILE IN /ASSETS
 
         // Gets the data repository in write mode
@@ -243,14 +244,16 @@ class PingActivity : ComponentActivity() {
 
     fun queryDatabase(dbHelper: EventManagerDbHelper, start: Long, end: Long): Deferred<Cursor?> = CoroutineScope(Dispatchers.IO).async {
         val db = dbHelper.readableDatabase
-        val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+        //val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.getDefault())
 
-        val startString = dateFormat.format(Date(start))
-        val endString = dateFormat.format(Date(end))
+        //val startString = dateFormat.format(Date(start))
+        //val endString = dateFormat.format(Date(end))
         val projection = arrayOf(BaseColumns._ID, EventManagerContract.SleepEvent.COLUMN_NAME_TIMESTAMP, EventManagerContract.SleepEvent.COLUMN_NAME_EVENT1)
-        val selection = "${EventManagerContract.SleepEvent.COLUMN_NAME_TIMESTAMP} >= ? AND ${EventManagerContract.SleepEvent.COLUMN_NAME_TIMESTAMP} <= ?" // Filtra in modo che sia una data compresa tra ieri e oggi
-        val selectionArgs = arrayOf(startString, endString)
-        val sortOrder = "${EventManagerContract.SleepEvent.COLUMN_NAME_TIMESTAMP} "
+        val selection = null
+        val selectionArgs = null
+        //val selection = "${EventManagerContract.SleepEvent.COLUMN_NAME_TIMESTAMP} >= ? AND ${EventManagerContract.SleepEvent.COLUMN_NAME_TIMESTAMP} <= ?" // Filtra in modo che sia una data compresa tra ieri e oggi
+        //val selectionArgs = arrayOf(startString, endString)
+        val sortOrder = "${EventManagerContract.SleepEvent.COLUMN_NAME_TIMESTAMP} ASC"
         return@async db.query(
             EventManagerContract.SleepEvent.TABLE_NAME1,
             projection,
@@ -266,13 +269,13 @@ class PingActivity : ComponentActivity() {
         val cursor = queryDatabase(dbHelper, startOfYesterday, endOfToday).await()
         cursor?.use {
             while (it.moveToNext()) {
-                val timestampString = it.getString(it.getColumnIndexOrThrow(EventManagerContract.SleepEvent.COLUMN_NAME_TIMESTAMP)) // QUI LA DATA È STRINGA
+                val timestamp = it.getLong(it.getColumnIndexOrThrow(EventManagerContract.SleepEvent.COLUMN_NAME_TIMESTAMP)) // QUI LA DATA È STRINGA
                 val value = it.getFloat(it.getColumnIndexOrThrow(EventManagerContract.SleepEvent.COLUMN_NAME_EVENT1))
 
                 // si converte la stringa del timestamp in millisecondi
-                val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
-                val date = dateFormat.parse(timestampString)
-                val timestamp = date?.time ?: 0L // QUI LA DATA È IN MILLISEC
+                //val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.getDefault())
+               // val date = dateFormat.parse(timestampString)
+                //val timestamp = date?.time ?: 0L // QUI LA DATA È IN MILLISEC
 
                 sleepEvents.add(SleepEvent(timestamp, value))
             }
@@ -317,15 +320,19 @@ class PingActivity : ComponentActivity() {
 
     // Calcola la deviazione standard ogni 5 minuti
     // ---------------------------------------------------------------------
-    val intervalInMillisec = 5 * 60 * 1000; // 5 minuti in milli
+    val INTERVAL = 5 * 60 * 1000L; // 5 minuti in milli
+    val BASE_TIMESTAMP = sleep_event[0].timestamp
+    var currentWindow = 0L
     var currentIndex = 0
+    Log.i(TAG, "BASE TIMESTAMP: $BASE_TIMESTAMP")
     while (currentIndex < sleep_event.size) {
         val currentTimestamp = sleep_event[currentIndex].timestamp
         val currentValues = mutableListOf<Float>()
         val currentTimestamps = mutableListOf<Long>()
+        val rightBound = INTERVAL*(currentWindow+1)
 
         // Raccogli i valori nei prossimi 5 minuti
-        while (currentIndex < sleep_event.size && sleep_event[currentIndex].timestamp - currentTimestamp <= intervalInMillisec) {
+        while (currentIndex < sleep_event.size && sleep_event[currentIndex].timestamp - BASE_TIMESTAMP < rightBound) {
             currentValues.add(sleep_event[currentIndex].value)
             currentTimestamps.add(sleep_event[currentIndex].timestamp)
             currentIndex++
@@ -343,10 +350,15 @@ class PingActivity : ComponentActivity() {
         // Convert RRIntervals to a double array
         val RRIntervalsArray = RRIntervals.toLongArray()
         val sdnn = SleepStageClassifier.calculateSDNN(RRIntervalsArray)
-        sdnn_list.add(sdnn)
+        //if(sdnn != 0.0)
+            sdnn_list.add(sdnn)
 
-        Log.d("DeviationCalculation", "Deviazione standard per il periodo ${currentTimestamp} - ${currentTimestamp + intervalInMillisec}: $sdnn")
+        if(sdnn > 0)
+            Log.d("DeviationCalculation", "Deviazione standard per il periodo ${currentTimestamp} - ${currentTimestamp + INTERVAL}: $sdnn")
+        else
+            Log.e("DeviationCalculation", "Deviazione standard per il periodo ${currentTimestamp} - ${currentTimestamp + INTERVAL}: $sdnn")
 
+        currentWindow++
     }
 
       val sdnn_array = sdnn_list.toDoubleArray()
@@ -398,33 +410,64 @@ class PingActivity : ComponentActivity() {
         val reader = BufferedReader(InputStreamReader(inputStream))
 
         var line: String?
-        var timestamp = System.currentTimeMillis() // Timestamp di partenza
-        val interval = 1000 * 2 // Intervallo di 2 secondi in millisecondi
+        val timestamp_base = System.currentTimeMillis() // Timestamp di partenza
+        var last_timestamp = 0L
+        var lines = 0L
+        var last_bpm = 0.0f
+        //val interval = 1000 * 2 // Intervallo di 2 secondi in millisecondi
 
         try {
             while (reader.readLine().also { line = it } != null) {
                 line?.let {
+                    lines++
                     val dataParts = it.split(",") // Divide la linea in due parti
-                    if (dataParts.size == 2) {
-                        val bpm = dataParts[1].toFloatOrNull() // Usa solo la parte dopo la virgola
-                        bpm?.let {
-                            // Formatta il timestamp
-                            val formattedTimestamp = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date(timestamp))
+                    if (dataParts.size != 2) {
+                        throw Exception("bruh")
+                    }
 
-                            // Crea un nuovo record
-                            val values = ContentValues().apply {
-                                put(EventManagerContract.SleepEvent.COLUMN_NAME_TIMESTAMP, formattedTimestamp)
-                                put(EventManagerContract.SleepEvent.COLUMN_NAME_EVENT1, bpm)
-                            }
-                            Log.d("DatabaseTest", "Inserisco: $formattedTimestamp, BPM: $bpm")
+                    val timestamp = (dataParts[0].toFloat() * 1000f).toLong() + timestamp_base;
+                    val bpm = dataParts[1].toFloat() // Usa solo la parte dopo la virgola
 
-                            // Inserisce il record nel database
-                            db.insert(EventManagerContract.SleepEvent.TABLE_NAME1, null, values)
+                    if (bpm.isNaN() or bpm.isInfinite())
+                        throw Exception("BRUH IN VIRGOLA MOBILE")
 
-                            // Incrementa il timestamp per il prossimo record
-                            timestamp += interval
+                    if (timestamp - last_timestamp < 2000L && last_timestamp != 0L)
+                        return@let
+
+                    val toInsert = mutableListOf<Pair<Long, Float>>()
+                    if (timestamp - last_timestamp < 60*1000L || last_timestamp == 0L)
+                        toInsert.add(Pair(timestamp, bpm))
+                    else { // Interpola
+                        val n_ticks = (timestamp - last_timestamp)/90000L
+                        for (i in 1..n_ticks) {
+                            toInsert.add(Pair(
+                                timestamp + i*90000L,
+                                (1.0f - i.toFloat()/n_ticks)*last_bpm + (i.toFloat()/n_ticks)*bpm
+                            ))
                         }
                     }
+
+                    toInsert.forEach {
+                        // Crea un nuovo record
+                        val values = ContentValues().apply {
+                            put(EventManagerContract.SleepEvent.COLUMN_NAME_TIMESTAMP, it.first)
+                            put(EventManagerContract.SleepEvent.COLUMN_NAME_EVENT1, it.second)
+                        }
+
+                        // Formatta il timestamp
+                        val formattedTimestamp = SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.getDefault()).format(Date(it.first))
+                        val grullo = it.first - last_timestamp
+
+                        Log.d("DatabaseTest", "Inserisco: $formattedTimestamp (${it.first}), BPM: $bpm, diff: $grullo")
+
+                        // Inserisce il record nel database
+                        val status = db.insert(EventManagerContract.SleepEvent.TABLE_NAME1, null, values)
+                        if (status == -1L)
+                            throw Exception("BRUH DB")
+                    }
+
+                    last_timestamp = timestamp
+                    last_bpm = bpm
                 }
             }
         } catch (e: Exception) {
@@ -432,6 +475,7 @@ class PingActivity : ComponentActivity() {
         } finally {
             reader.close()
             db.close()
+            Log.i(TAG, "LETTE $lines LINEE DI MERDA")
         }
     }
 
@@ -451,6 +495,7 @@ class PingActivity : ComponentActivity() {
                 Log.i("DatabaseClear", "Deleted $deletedRows rows from table $table")
             }
 
+            db.setTransactionSuccessful()
             db.setTransactionSuccessful()
         } catch (e: Exception) {
             Log.e("DatabaseClear", "Error while trying to clear database", e)

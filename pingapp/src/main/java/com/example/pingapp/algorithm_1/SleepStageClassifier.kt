@@ -7,8 +7,8 @@ import kotlin.math.sqrt
 
 class SleepStageClassifier {
     companion object {
-        const val THETA_DEEP = 0.85 // Threshold for deep sleep ERA 0.75
-        const val THETA_REM = 1.0 // Threshold for REM sleep  ERA 1.2
+        const val THETA_DEEP = 0.75 // Threshold for deep sleep ERA 0.75
+        const val THETA_REM = 1.2 // Threshold for REM sleep  ERA 1.2
 
         enum class SleepStage {
             LIGHT,
@@ -72,6 +72,9 @@ class SleepStageClassifier {
         }
 
         fun calculateSDNN(RRIntervals: LongArray): Double {
+            if (RRIntervals.size <= 1)
+                return 0.0
+
             val meanRR = calculateMean(RRIntervals)
             val differences = DoubleArray(RRIntervals.size - 1)
 
@@ -88,9 +91,15 @@ class SleepStageClassifier {
         }
 
         fun calculateAverageSDNN(sdnnValues: DoubleArray): Double {
+            if(sdnnValues.size == 0)
+                return 0.0
+
             var sum = 0.0
+            var count = 0L
             for (sdnn in sdnnValues) {
                 sum += sdnn
+                if(sdnn != 0.0)
+                    count++
             }
             return sum / sdnnValues.size
         }

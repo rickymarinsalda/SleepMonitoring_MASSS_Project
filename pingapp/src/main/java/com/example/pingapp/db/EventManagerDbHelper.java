@@ -11,7 +11,7 @@ public class EventManagerDbHelper extends SQLiteOpenHelper {
     private static final String[] SQL_CREATE_ENTRIES = {
             "CREATE TABLE " + EventManagerContract.SleepEvent.TABLE_NAME1 + " (" +
                     EventManagerContract.SleepEvent._ID + " INTEGER PRIMARY KEY," +
-                    EventManagerContract.SleepEvent.COLUMN_NAME_TIMESTAMP + " TEXT," +
+                    EventManagerContract.SleepEvent.COLUMN_NAME_TIMESTAMP + " INTEGER," +
                     EventManagerContract.SleepEvent.COLUMN_NAME_EVENT1 + " FLOAT);",
             "CREATE TABLE " + EventManagerContract.SleepEvent.TABLE_NAME2 + " (" +
                     EventManagerContract.SleepEvent._ID + " INTEGER PRIMARY KEY," +
