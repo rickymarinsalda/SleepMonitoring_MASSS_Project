@@ -50,6 +50,7 @@ class ClassifierTest {
         assert(res == SleepStage.REM.stage)
 
         val res2 = classifySeries(classifierStatistical, timeSeries)
+        Log.d("TESTING", "res2 -> ${res2.size}")
         assert(res2.size == 3)
         Log.i("TESTING", "test statistica on series ${res2[0]}, ${res2[1]}, ${res2[2]}")
     }
