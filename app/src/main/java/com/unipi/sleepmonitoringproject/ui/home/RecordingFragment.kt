@@ -1,10 +1,12 @@
 package com.unipi.sleepmonitoringproject.ui.home
 
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import androidx.annotation.RequiresApi
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.unipi.sleepmonitoringproject.MainActivity
@@ -23,6 +25,7 @@ class RecordingFragment : Fragment() {
         return inflater.inflate(R.layout.fragment_recording, container, false)
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -40,6 +43,9 @@ class RecordingFragment : Fragment() {
 
             /* Return to the home fragment */
             findNavController().navigateUp()
+            /* Call onPongClick() */
+            (activity as MainActivity).onPongClick()
+
         }
     }
 
@@ -49,4 +55,6 @@ class RecordingFragment : Fragment() {
         (activity as MainActivity).supportActionBar?.show()
         (activity as MainActivity).binding.appBarMain.fab.show()
     }
+
+
 }

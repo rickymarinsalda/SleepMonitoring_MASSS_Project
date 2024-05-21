@@ -9,7 +9,7 @@ android {
 
     defaultConfig {
         applicationId = "com.unipi.sleepmonitoringproject"
-        minSdk = 24
+        minSdk = 28
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
@@ -50,8 +50,13 @@ dependencies {
     implementation(libs.androidx.navigation.ui.ktx)
     implementation(libs.androidx.ui.graphics.android)
     implementation(libs.androidx.core.animation)
+    implementation(libs.gms.play.services.wearable)
+    //implementation(project(":wearapp3"))
+    implementation(project(":sleeplib"))
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
+
+
 }
