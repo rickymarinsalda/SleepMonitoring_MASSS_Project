@@ -7,8 +7,8 @@ import kotlin.math.sqrt
 
 class SleepStageClassifier {
     companion object {
-        const val THETA_DEEP = 0.75 // Threshold for deep sleep ERA 0.75
-        const val THETA_REM = 1.2 // Threshold for REM sleep  ERA 1.2
+        const val THETA_DEEP = 0.9688 // Threshold for deep sleep ERA 0.75
+        const val THETA_REM = 1.063 // Threshold for REM sleep  ERA 1.2
 
         enum class SleepStage {
             LIGHT,
