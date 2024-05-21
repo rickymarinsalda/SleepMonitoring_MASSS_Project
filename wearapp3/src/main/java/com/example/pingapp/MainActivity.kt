@@ -7,6 +7,10 @@
 package com.example.pingapp
 
 import android.annotation.SuppressLint
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
@@ -48,15 +52,28 @@ class MainActivity : ComponentActivity(), SensorEventListener {
     private var heartTimeSeries = TimeSeries()
     private var accelTimeSeries = TimeSeries()
 
+
+    private val receiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            // Qui chiamo il metodo del bottone che voglio attivare
+            onStartStopClicked()
+            if(!started && session_start_time != 0L) {
+                onSendClicked()
+            }
+        }
+    }
+
     override fun onResume() {
         super.onResume()
         dataClient.addListener(clientDataViewModel)
         messageClient.addListener(clientDataViewModel)
+        registerReceiver(receiver, IntentFilter("com.example.pingapp.ACTION"))
         capabilityClient.addListener(
             clientDataViewModel,
             Uri.parse("wear://"),
             CapabilityClient.FILTER_ALL
         )
+
     }
 
     override fun onPause() {
@@ -64,6 +81,7 @@ class MainActivity : ComponentActivity(), SensorEventListener {
         dataClient.removeListener(clientDataViewModel)
         messageClient.removeListener(clientDataViewModel)
         capabilityClient.removeListener(clientDataViewModel)
+        unregisterReceiver(receiver)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

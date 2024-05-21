@@ -487,7 +487,6 @@ class PingActivity : ComponentActivity() {
             val tables = arrayOf(
                 EventManagerContract.SleepEvent.TABLE_NAME1,
                 EventManagerContract.SleepEvent.TABLE_NAME2,
-                EventManagerContract.SleepEvent.TABLE_NAME3
             )
 
             for (table in tables) {
