@@ -51,6 +51,7 @@ class ClassifierTest {
 
         val res2 = classifySeries(classifierStatistical, timeSeries)
         assert(res2.size == 3)
+        Log.i("TESTING", "test statistica on series ${res2[0]}, ${res2[1]}, ${res2[2]}")
     }
 
     @Test
@@ -70,5 +71,6 @@ class ClassifierTest {
 
         val res2 = classifySeries(classifierML, timeSeries)
         assert(res2.size == 3)
+        Log.i("TESTING", "test ML on series ${res2[0]}, ${res2[1]}, ${res2[2]}")
     }
 }
