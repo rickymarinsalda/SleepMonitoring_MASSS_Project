@@ -96,22 +96,10 @@ class PingActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-
-        if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-            Log.d(TAG, "Requirin permission!")
-            ActivityCompat.requestPermissions(
-                this,
-                arrayOf(android.Manifest.permission.WRITE_EXTERNAL_STORAGE),
-                1)
-        } else {
-            Log.d(TAG, "You have already permission!")
-        }
-
-
         dbHelper = EventManagerDbHelper(this) // inizializzo db
 
-        //clearDatabase(dbHelper) // PULISCE IL DB
-        //insertHeartRateDataFromFile(this, "8692923_heartrate.txt") // AGGIUNGE AL DB ROBA DA FILE IN /ASSETS
+        clearDatabase(dbHelper) // PULISCE IL DB
+        insertHeartRateDataFromFile(this, "8692923_heartrate.txt") // AGGIUNGE AL DB ROBA DA FILE IN /ASSETS
         //insertHeartRateDataFromFile(this, "9618981_heartrate.txt") // AGGIUNGE AL DB ROBA DA FILE IN /ASSETS
 
         // Gets the data repository in write mode
@@ -213,6 +201,16 @@ class PingActivity : ComponentActivity() {
 
                 // Creazione del file di output nella directory della scheda SD
                 val outputFile = File(sdCardDirectory, outputFileName)
+
+            //if (ContextCompat.checkSelfPermission(this@PingActivity, android.Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                Log.d(TAG, "Requiring permission!")
+                ActivityCompat.requestPermissions(
+                    this@PingActivity,
+                    arrayOf(android.Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                    1)
+            //} else {
+            //    Log.d(TAG, "You have already permission!")
+            //}
 
 
                 // Scrittura dei risultati su file
