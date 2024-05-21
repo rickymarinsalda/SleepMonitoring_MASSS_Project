@@ -1,4 +1,4 @@
-package com.example.pingapp
+package com.unipi.sleepmonitoringproject
 
 import android.annotation.SuppressLint
 import android.app.ActivityManager
@@ -33,7 +33,7 @@ class DataLayerListenerService : WearableListenerService() {
             val action = dataMap.getString("mossa")
             if ("pong" == action) {
                 // Quando ricevi un evento onDataChanged con l'azione "pong", invia il broadcast
-                val intent = Intent("com.example.pingapp.ACTION")
+                val intent = Intent("com.unipi.sleepmonitoringproject.ACTION")
                 sendBroadcast(intent)
             }
         }

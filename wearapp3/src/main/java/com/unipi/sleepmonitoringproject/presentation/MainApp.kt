@@ -1,4 +1,4 @@
-package com.example.pingapp.presentation
+package com.unipi.sleepmonitoringproject.presentation
 
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -9,13 +9,11 @@ import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.wear.compose.material.Button
-import androidx.wear.compose.material.ButtonColors
 import androidx.wear.compose.material.ButtonDefaults
 import androidx.wear.compose.material.ExperimentalWearMaterialApi
 import androidx.wear.compose.material.PositionIndicator
 import androidx.wear.compose.material.Scaffold
 import androidx.wear.compose.material.ScalingLazyColumn
-import androidx.wear.compose.material.Switch
 import androidx.wear.compose.material.Text
 import androidx.wear.compose.material.TimeText
 import androidx.wear.compose.material.Vignette

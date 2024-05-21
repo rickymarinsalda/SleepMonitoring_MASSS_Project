@@ -4,7 +4,7 @@
  * changes to the libraries and their usages.
  */
 
-package com.example.pingapp
+package com.unipi.sleepmonitoringproject
 
 import android.annotation.SuppressLint
 import android.content.BroadcastReceiver
@@ -24,7 +24,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.lifecycleScope
-import com.example.pingapp.presentation.MainApp
+import com.unipi.sleepmonitoringproject.presentation.MainApp
 import com.google.android.gms.wearable.CapabilityClient
 import com.google.android.gms.wearable.PutDataMapRequest
 import com.google.android.gms.wearable.Wearable
@@ -67,7 +67,7 @@ class MainActivity : ComponentActivity(), SensorEventListener {
         super.onResume()
         dataClient.addListener(clientDataViewModel)
         messageClient.addListener(clientDataViewModel)
-        registerReceiver(receiver, IntentFilter("com.example.pingapp.ACTION"))
+        registerReceiver(receiver, IntentFilter("com.unipi.sleepmonitoringproject.ACTION"))
         capabilityClient.addListener(
             clientDataViewModel,
             Uri.parse("wear://"),

@@ -1,4 +1,4 @@
-package com.example.pingapp.presentation.theme
+package com.unipi.sleepmonitoringproject.presentation.theme
 
 import androidx.compose.runtime.Composable
 import androidx.wear.compose.material.MaterialTheme
