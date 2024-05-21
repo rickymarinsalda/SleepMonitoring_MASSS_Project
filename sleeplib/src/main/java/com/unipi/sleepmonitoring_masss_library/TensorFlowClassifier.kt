@@ -1,4 +1,4 @@
-package com.example.pingapp
+package com.unipi.sleepmonitoring_masss_library
 
 import android.content.Context
 import android.content.res.AssetFileDescriptor
@@ -10,19 +10,17 @@ import java.nio.channels.FileChannel
 import kotlin.math.max
 
 
-class Classifier(private val context: Context) {
+interface Classifier{
+    fun doInference(input : Array<FloatArray>): Int
+}
+
+class ClassifierML(private val context: Context) : Classifier {
 
     private lateinit var tflite : Interpreter
 
     private lateinit var modelName: String
 
     init {
-//        try {
-//            tflite = Interpreter(loadModelFile())
-//        } catch (e: Exception) {
-//            // Print the stack trace for any other exceptions during initialization
-//            e.printStackTrace()
-//        }
         tflite = Interpreter(loadModelFile())
     }
 
@@ -36,18 +34,26 @@ class Classifier(private val context: Context) {
         return fileChannel.map(FileChannel.MapMode.READ_ONLY, startOffset, declareLength)
     }
 
-    fun doInference(bpms : FloatArray): Int {
-        assert(bpms.size == 5)
+    /**
+     * @param input a 4x5 "matrix", first row contains the bpms and the others the x y z readings
+     *              from the accelerometer
+     */
+    override fun doInference(input : Array<FloatArray>): Int {
+        assert(input.size == 4)
+        for (floats in input) {
+            assert(floats.size == 5)
+        }
 
-        for (i in bpms.indices)
-            bpms[i] = (bpms[i] - 50)/105
+        // Normalize bpms
+        for (i in input[0].indices)
+            input[0][i] = (input[0][i] - 50)/105
 
-        val output = Array(1) { FloatArray(3) }
-        tflite.run(bpms, output)
+        val output = Array(1) { FloatArray(4) }
+        tflite.run(input, output)
 
         Log.i("MODELLOTFLITEBRUH", "Ran inference on ${output[0][0]}, ${output[0][1]}, ${output[0][2]}")
 
-        val maxV = max(output[0][0], max(output[0][1], output[0][2]))
+        val maxV = max(output[0][0], max(output[0][1], max(output[0][2], output[0][3])))
 
         if (output[0][0] >= maxV)
             return 0
@@ -55,7 +61,12 @@ class Classifier(private val context: Context) {
             return 1
         if (output[0][2] >= maxV)
             return 2
+        if (output[0][3] >= maxV)
+            return 3
+
+        // bruh
         throw Exception("NO MA CHE DIAVOLO COM'È POSSIBILE")
     }
 }
 
+// @TODO add Ricky's alg
