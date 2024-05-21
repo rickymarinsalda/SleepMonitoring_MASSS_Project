@@ -189,7 +189,8 @@ class PingActivity : ComponentActivity() {
                         sleepEvents[i+4].value,
                         )
 
-                    val assurdo = classifierML.doInference(bpms)
+                    // @FIXME
+                    val assurdo = classifierML.doInference(arrayOf(bpms))
 
                     Log.d(TAG, "Assurdo[$i] -> $assurdo")
 
