@@ -1,6 +1,36 @@
 <resources>
-    <string name="app_name">SleepMonitoring_MASSS_Project</string>
-    <string name="title_home">Home</string>
-    <string name="title_dashboard">Dashboard</string>
-    <string name="title_notifications">Notifications</string>
+    <string name="app_name">Sleep Monitoring Project</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="nav_header_title">Rest Evaluation Monitoring</string>
+    <string name="nav_header_subtitle">https://github.com/rickymarinsalda/SleepMonitoring_MASSS_Project</string>
+    <string name="nav_header_desc">Navigation header</string>
+    <string name="action_settings">Settings</string>
+
+    <string name="menu_home">Home</string>
+    <string name="menu_stats">Stats</string>
+    <string name="menu_slideshow">Slideshow</string>
+
+    <string name="home_title_after_rec">Your last night of sleep</string>
+    <string name="data_title">Sleep information</string>
+
+    <string name="time_asleep">%.1f h</string>
+    <string name="to_fall_asleep">%.1f m</string>
+
+    <string name="time_asleep_d">in bed</string>
+    <string name="to_fall_asleep_d">to fall asleep</string>
+    <string name="pillow_icon">pillow icon</string>
+    <string name="inbed_basic_text">inbed</string>
+    <string name="sheep_icon">sheep icon</string>
+    <string name="asleep_basic_text">asleep</string>
+
+    <!-- Case sleep not registered -->
+    <string name="home_title_before_rec">Sleep not yet registered.</string>
+
+    <!-- Recording Fragment -->
+    <string name="stop_recording">Stop</string>
+    <string name="good_night">Good night!</string>
+    <string name="see_you">recording your sleep data…</string>
+    <string name="moon_recording_icon">Moon recording icon</string>
+    <string name="your_last_week_of_sleep">Your last week of sleep</string>
 </resources>
