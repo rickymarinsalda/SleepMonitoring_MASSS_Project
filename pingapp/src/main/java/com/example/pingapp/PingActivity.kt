@@ -1,21 +1,14 @@
 package com.example.pingapp
 
-import android.R
-import android.R.attr.bitmap
-import android.R.attr.data
 import android.content.ContentValues
 import android.content.Context
-import android.content.ContextWrapper
 import android.content.pm.PackageManager
 import android.database.Cursor
-import android.graphics.Bitmap
-import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
 import android.provider.BaseColumns
 import android.util.Log
-import android.view.View
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -47,12 +40,12 @@ import com.example.pingapp.ui.theme.SleepMonitoring_MASSS_ProjectTheme
 import com.google.android.gms.wearable.CapabilityClient
 import com.google.android.gms.wearable.PutDataMapRequest
 import com.google.android.gms.wearable.Wearable
+import com.unipi.sleepmonitoring_masss_library.ClassifierML
 import com.unipi.sleepmonitoring_masss_library.TimeSeries
 import kotlinx.coroutines.*
 import java.io.BufferedReader
 import java.io.File
 import java.io.FileOutputStream
-import java.io.IOException
 import java.io.InputStreamReader
 import java.io.OutputStreamWriter
 import java.text.SimpleDateFormat
@@ -60,7 +53,6 @@ import java.time.Instant
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
-import kotlin.math.floor
 
 
 class PingActivity : ComponentActivity() {
@@ -181,7 +173,7 @@ class PingActivity : ComponentActivity() {
                 // Chiamata all'algoritmo
 
                 //val sleepStages = algorithm_1(sleepEvents)
-                val classifier = Classifier(context = this@PingActivity)
+                val classifierML = ClassifierML(context = this@PingActivity)
 
                 var sleepStages = intArrayOf()
 
@@ -197,7 +189,7 @@ class PingActivity : ComponentActivity() {
                         sleepEvents[i+4].value,
                         )
 
-                    val assurdo = classifier.doInference(bpms)
+                    val assurdo = classifierML.doInference(bpms)
 
                     Log.d(TAG, "Assurdo[$i] -> $assurdo")
 
