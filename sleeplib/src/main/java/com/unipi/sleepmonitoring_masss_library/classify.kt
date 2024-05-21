@@ -8,13 +8,13 @@ fun classifySeries(classifier: Classifier, series: TimeSeries): IntArray {
     // scan through series
     while(i < series.size()) {
 
-        lateinit var input : Array<FloatArray>
+        var input : Array<FloatArray> = arrayOf()
         val startTime = series.data[i].timestamp
 
         var idxToSample : IntArray = intArrayOf()
 
         var j = i
-        while(j < series.size() && series.data[j].timestamp < startTime + (5 * 60 * 1000L))
+        while(j < series.size() && series.data[j].timestamp < startTime + (10 * 60 * 1000L))
             idxToSample += j++
 
         if (j >= series.size())

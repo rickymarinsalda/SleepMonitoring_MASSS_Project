@@ -18,16 +18,24 @@ class ClassifierTest {
 
         timeSeries.add(floatArrayOf(32.0f, 0.0f, 0.0f, 0.0f), 0*60*1_000L)
         timeSeries.add(floatArrayOf(35.0f, 0.0f, 0.0f, 0.0f), 3*60*1_000L)
+        timeSeries.add(floatArrayOf(40.0f, 0.0f, 0.0f, 0.0f), 5*60*1_000L)
         timeSeries.add(floatArrayOf(40.0f, 0.0f, 0.0f, 0.0f), 7*60*1_000L)
         timeSeries.add(floatArrayOf(45.0f, 0.0f, 0.0f, 0.0f), 9*60*1_000L)
 
         timeSeries.add(floatArrayOf(78.0f, 0.0f, 0.0f, 0.0f), 11*60*1_000L)
-        timeSeries.add(floatArrayOf(75.0f, 0.0f, 0.0f, 0.0f), 14*60*1_000L)
-        timeSeries.add(floatArrayOf(40.0f, 0.0f, 0.0f, 0.0f), 17*60*1_000L)
+        timeSeries.add(floatArrayOf(75.0f, 0.0f, 0.0f, 0.0f), 12*60*1_000L)
+        timeSeries.add(floatArrayOf(40.0f, 0.0f, 0.0f, 0.0f), 13*60*1_000L)
+        timeSeries.add(floatArrayOf(78.0f, 0.0f, 0.0f, 0.0f), 14*60*1_000L)
+        timeSeries.add(floatArrayOf(78.0f, 0.0f, 0.0f, 0.0f), 15*60*1_000L)
 
-        timeSeries.add(floatArrayOf(95.0f, 3.0f, 2.0f, 3.0f), 24*60*1_000L)
-        timeSeries.add(floatArrayOf(124.0f, 2.0f, 3.0f, 2.0f), 27*60*1_000L)
-        timeSeries.add(floatArrayOf(105.0f, 5.0f, 5.5f, 0.3f), 29*60*1_000L)
+        timeSeries.add(floatArrayOf(95.0f, 3.0f, 2.0f, 3.0f), 21*60*1_000L)
+        timeSeries.add(floatArrayOf(124.0f, 2.0f, 3.0f, 2.0f), 22*60*1_000L)
+        timeSeries.add(floatArrayOf(105.0f, 5.0f, 5.5f, 0.3f), 23*60*1_000L)
+        timeSeries.add(floatArrayOf(105.0f, 5.0f, 5.5f, 0.3f), 24*60*1_000L)
+        timeSeries.add(floatArrayOf(105.0f, 5.0f, 5.5f, 0.3f), 25*60*1_000L)
+        timeSeries.add(floatArrayOf(105.0f, 5.0f, 5.5f, 0.3f), 26*60*1_000L)
+        timeSeries.add(floatArrayOf(105.0f, 5.0f, 5.5f, 0.3f), 27*60*1_000L)
+
     }
 
     @Test
@@ -39,6 +47,10 @@ class ClassifierTest {
 
         Log.i("TESTING", "test statistical $res")
         assert(res in 0..3)
+        assert(res == SleepStage.REM.stage)
+
+        val res2 = classifySeries(classifierStatistical, timeSeries)
+        assert(res2.size == 3)
     }
 
     @Test
@@ -54,5 +66,9 @@ class ClassifierTest {
 
         Log.i("TESTING", "test ML $res")
         assert(res in 0..3)
+        assert(res == SleepStage.REM.stage)
+
+        val res2 = classifySeries(classifierML, timeSeries)
+        assert(res2.size == 3)
     }
 }
