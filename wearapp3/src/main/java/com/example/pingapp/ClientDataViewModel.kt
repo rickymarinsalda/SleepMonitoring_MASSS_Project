@@ -48,7 +48,7 @@ class ClientDataViewModel(
 
     @SuppressLint("VisibleForTests")
     override fun onDataChanged(dataEvents: DataEventBuffer) {
-        Log.i("DATA", "DSFSDFSDFSD")
+       // Log.i("DATA", "DSFSDFSDFSD")
     }
 
     override fun onMessageReceived(messageEvent: MessageEvent) {

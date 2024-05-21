@@ -29,7 +29,6 @@ class ClientDataViewModel(private val dbHelper: EventManagerDbHelper):
     var updateGUI: (series: TimeSeries) -> Unit = {}
     // Creazione di un pool di thread
     private val executorService = Executors.newFixedThreadPool(4)
-
     override fun onDataChanged(dataEvents: DataEventBuffer) {
         Log.i("DATA", "ARGGG")
 
@@ -47,7 +46,7 @@ class ClientDataViewModel(private val dbHelper: EventManagerDbHelper):
             }
 
             // Funzione per processare i dati
-            fun processData(dataKey: String, insertFunction: (SQLiteDatabase, String, Double) -> Unit) {
+            fun processData(dataKey: String, insertFunction: (SQLiteDatabase, String, FloatArray) -> Unit) {
                 if (dataMap.containsKey(dataKey)) {
                     Log.i("TEST", "SONO ENTRATO IN $dataKey")
                     val dataMapItem = dataMap.getDataMap(dataKey) ?: DataMap()
@@ -59,7 +58,7 @@ class ClientDataViewModel(private val dbHelper: EventManagerDbHelper):
                                 val datum = series.get(i)
                                 val timestamp = SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(datum.timestamp)
                                 Log.i("TestTimestamp", "Timestamp: $timestamp")
-                                insertFunction(db, timestamp, datum.datum[0].toDouble())
+                                insertFunction(db, timestamp, datum.datum)//datum.datum[0].toDouble()
                             }
                         }
                     } else {
@@ -77,9 +76,23 @@ class ClientDataViewModel(private val dbHelper: EventManagerDbHelper):
             updateGUI(TimeSeries.deserializeFromGoogle(dataMap.getDataMap("data_accel")!!))
 
             // Chiusura del database dopo che tutti i thread hanno terminato
-            executorService.shutdown()
-            executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS)
-            db.close()
+            //executorService.shutdown()
+            //executorService.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS)
+            //db.close()
+        }
+    }
+    override fun onCleared() {
+        super.onCleared()
+        executorService.shutdown()
+        try {
+            if (!executorService.awaitTermination(60, TimeUnit.SECONDS)) {
+                executorService.shutdownNow()
+            }
+        } catch (ex: InterruptedException) {
+            executorService.shutdownNow()
+            Thread.currentThread().interrupt()
+        } finally {
+            //db.close() // Chiudi il database qui
         }
     }
 
@@ -91,24 +104,36 @@ class ClientDataViewModel(private val dbHelper: EventManagerDbHelper):
         TODO("Not yet implemented")
     }
 
-    private fun insertDataIntoDatabaseHeartRate(db: SQLiteDatabase, timestamp: String, bpm: Double) {
-        Log.i("TEST", "INSERISCO NEL DB")
+    private fun insertDataIntoDatabaseHeartRate(db: SQLiteDatabase, timestamp: String, bpm: FloatArray) {
+        Log.i("TEST", "INSERISCO NEL DB HEART")
+        val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+        val date = sdf.parse(timestamp)
+        val timestamp_int = date.time
+        Log.i("TEST", "timestamp che inserirò:" + timestamp_int)
         // Create a new map of values, where column names are the keys
         val values = ContentValues().apply {
-            put(EventManagerContract.SleepEvent.COLUMN_NAME_TIMESTAMP, timestamp)
-            put(EventManagerContract.SleepEvent.COLUMN_NAME_EVENT1, bpm)
+            put(EventManagerContract.SleepEvent.COLUMN_NAME_TIMESTAMP, timestamp_int)
+            put(EventManagerContract.SleepEvent.COLUMN_NAME_EVENT1, bpm[0].toDouble())
         }
 
         // Insert the new row, returning the primary key value of the new row
         val newRowId = db.insert(EventManagerContract.SleepEvent.TABLE_NAME1, null, values)
 
     }
-    private fun insertDataIntoDatabaseAccel(db: SQLiteDatabase, timestamp: String, acc: Double) {
+    private fun insertDataIntoDatabaseAccel(db: SQLiteDatabase, timestamp: String, acc: FloatArray) {
         Log.i("TEST", "INSERISCO NEL DB accel")
+        val sdf = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+        val date = sdf.parse(timestamp)
+        val timestamp_int = date.time
+        Log.i("TEST", "timestamp che inserirò:" + timestamp_int + "VALORE ACC:" + acc[0].toDouble())
+        Log.i("TEST", "timestamp che inserirò:" + timestamp_int + "VALORE ACC:" + acc[1].toDouble())
+        Log.i("TEST", "timestamp che inserirò:" + timestamp_int + "VALORE ACC:" + acc[2].toDouble())
         // Create a new map of values, where column names are the keys
         val values = ContentValues().apply {
-            put(EventManagerContract.SleepEvent.COLUMN_NAME_TIMESTAMP, timestamp)
-            put(EventManagerContract.SleepEvent.COLUMN_NAME_EVENT2, acc)
+            put(EventManagerContract.SleepEvent.COLUMN_NAME_TIMESTAMP, timestamp_int)
+            put(EventManagerContract.SleepEvent.COLUMN_NAME_EVENT2_x, acc[0].toDouble())
+            put(EventManagerContract.SleepEvent.COLUMN_NAME_EVENT2_y, acc[1].toDouble())
+            put(EventManagerContract.SleepEvent.COLUMN_NAME_EVENT2_z, acc[2].toDouble())
         }
 
         // Insert the new row, returning the primary key value of the new row

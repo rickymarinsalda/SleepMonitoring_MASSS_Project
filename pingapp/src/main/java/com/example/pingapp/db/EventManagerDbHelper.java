@@ -6,7 +6,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class EventManagerDbHelper extends SQLiteOpenHelper {
     // If we change the database schema, we must increment the database version.
-    public static final int DATABASE_VERSION = 1;
+    public static final int DATABASE_VERSION = 2;
     public static final String DATABASE_NAME = "EventManager.db";
     private static final String[] SQL_CREATE_ENTRIES = {
             "CREATE TABLE " + EventManagerContract.SleepEvent.TABLE_NAME1 + " (" +
@@ -15,17 +15,14 @@ public class EventManagerDbHelper extends SQLiteOpenHelper {
                     EventManagerContract.SleepEvent.COLUMN_NAME_EVENT1 + " FLOAT);",
             "CREATE TABLE " + EventManagerContract.SleepEvent.TABLE_NAME2 + " (" +
                     EventManagerContract.SleepEvent._ID + " INTEGER PRIMARY KEY," +
-                    EventManagerContract.SleepEvent.COLUMN_NAME_TIMESTAMP + " TEXT," +
-                    EventManagerContract.SleepEvent.COLUMN_NAME_EVENT2 + " FLOAT);",
-            "CREATE TABLE " + EventManagerContract.SleepEvent.TABLE_NAME3 + " (" +
-                    EventManagerContract.SleepEvent._ID + " INTEGER PRIMARY KEY," +
-                    EventManagerContract.SleepEvent.COLUMN_NAME_TIMESTAMP + " TEXT," +
-                    EventManagerContract.SleepEvent.COLUMN_NAME_EVENT3 + " INTEGER);"
+                    EventManagerContract.SleepEvent.COLUMN_NAME_TIMESTAMP + " INTEGER," +
+                    EventManagerContract.SleepEvent.COLUMN_NAME_EVENT2_x + " FLOAT," +
+                    EventManagerContract.SleepEvent.COLUMN_NAME_EVENT2_y + " FLOAT," +
+                    EventManagerContract.SleepEvent.COLUMN_NAME_EVENT2_z + " FLOAT);"
     };
     private static final String[] SQL_DELETE_ENTRIES = {
             "DROP TABLE IF EXISTS " + EventManagerContract.SleepEvent.TABLE_NAME1,
-            "DROP TABLE IF EXISTS " + EventManagerContract.SleepEvent.TABLE_NAME2,
-            "DROP TABLE IF EXISTS " + EventManagerContract.SleepEvent.TABLE_NAME3
+            "DROP TABLE IF EXISTS " + EventManagerContract.SleepEvent.TABLE_NAME2
     };
 
     public EventManagerDbHelper(Context context) {
@@ -37,13 +34,14 @@ public class EventManagerDbHelper extends SQLiteOpenHelper {
         }
     }
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        // This database is only a cache for online data, so its upgrade policy is
-        // to simply to discard the data and start over
-        for (String createTableStatement : SQL_CREATE_ENTRIES) {
-            db.execSQL(createTableStatement);
+        // Elimina le tabelle esistenti
+        for (String deleteTableStatement : SQL_DELETE_ENTRIES) {
+            db.execSQL(deleteTableStatement);
         }
+        // Ricrea le tabelle
         onCreate(db);
     }
+
     public void onDowngrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         onUpgrade(db, oldVersion, newVersion);
     }
