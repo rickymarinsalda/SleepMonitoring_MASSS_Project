@@ -1,14 +1,14 @@
 plugins {
-    alias(libs.plugins.androidApplication)
-    alias(libs.plugins.jetbrainsKotlinAndroid)
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.jetbrains.kotlin.android)
 }
 
 android {
-    namespace = "com.unipi.sleepmonitoring_masss_project"
+    namespace = "com.unipi.sleepmonitoringproject"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.unipi.sleepmonitoring_masss_project"
+        applicationId = "com.unipi.sleepmonitoringproject"
         minSdk = 24
         targetSdk = 34
         versionCode = 1
@@ -48,7 +48,10 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.androidx.navigation.fragment.ktx)
     implementation(libs.androidx.navigation.ui.ktx)
+    implementation(libs.androidx.ui.graphics.android)
+    implementation(libs.androidx.core.animation)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+    implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
 }

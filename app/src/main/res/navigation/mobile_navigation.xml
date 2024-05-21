@@ -3,23 +3,34 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/mobile_navigation"
-    app:startDestination="@+id/navigation_home">
+    app:startDestination="@+id/nav_home">
 
     <fragment
-        android:id="@+id/navigation_home"
-        android:name="com.unipi.sleepmonitoring_masss_project.ui.home.HomeFragment"
-        android:label="@string/title_home"
+        android:id="@+id/nav_home"
+        android:name="com.unipi.sleepmonitoringproject.ui.home.HomeFragment"
+        android:label="@string/menu_home"
         tools:layout="@layout/fragment_home" />
 
     <fragment
-        android:id="@+id/navigation_dashboard"
-        android:name="com.unipi.sleepmonitoring_masss_project.ui.dashboard.DashboardFragment"
-        android:label="@string/title_dashboard"
-        tools:layout="@layout/fragment_dashboard" />
+        android:id="@+id/nav_stats"
+        android:name="com.unipi.sleepmonitoringproject.ui.stats.StatsFragment"
+        android:label="@string/menu_stats"
+        tools:layout="@layout/fragment_stats" />
 
     <fragment
-        android:id="@+id/navigation_notifications"
-        android:name="com.unipi.sleepmonitoring_masss_project.ui.notifications.NotificationsFragment"
-        android:label="@string/title_notifications"
-        tools:layout="@layout/fragment_notifications" />
+        android:id="@+id/nav_slideshow"
+        android:name="com.unipi.sleepmonitoringproject.ui.slideshow.SlideshowFragment"
+        android:label="@string/menu_slideshow"
+        tools:layout="@layout/fragment_slideshow" />
+
+    <fragment
+        android:id="@+id/recordingFragment"
+        android:name="com.unipi.sleepmonitoringproject.ui.home.RecordingFragment"
+        android:label="recording"
+        tools:layout="@layout/fragment_recording" />
+
+    <!-- Actions -->
+    <action
+        android:id="@+id/action_nav_home_to_recordingFragment"
+        app:destination="@id/recordingFragment" />
 </navigation>
