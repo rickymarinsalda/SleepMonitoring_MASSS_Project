@@ -16,13 +16,21 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.compose.runtime.Composable
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.lifecycleScope
-import com.unipi.sleepmonitoringproject.presentation.MainApp
 import com.google.android.gms.wearable.CapabilityClient
 import com.google.android.gms.wearable.PutDataMapRequest
 import com.google.android.gms.wearable.Wearable
+import com.unipi.sleepmonitoring_masss_library.Classifier
+import com.unipi.sleepmonitoring_masss_library.ClassifierML
+import com.unipi.sleepmonitoring_masss_library.ClassifierStatistical
+import com.unipi.sleepmonitoring_masss_library.FileLoader
+import com.unipi.sleepmonitoring_masss_library.SleepStage
 import com.unipi.sleepmonitoring_masss_library.TimeSeries
+import com.unipi.sleepmonitoring_masss_library.classifySeries
+import com.unipi.sleepmonitoringproject.presentation.ClassifySessionResults
+import com.unipi.sleepmonitoringproject.presentation.MainApp
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 import java.time.Instant
@@ -35,7 +43,7 @@ class MainActivity : ComponentActivity(), SensorEventListener {
 
     private val clientDataViewModel by viewModels<ClientDataViewModel>()
 
-    private val sensorManager: SensorManager by lazy {getSystemService(SENSOR_SERVICE) as SensorManager}
+    private val sensorManager: SensorManager by lazy { getSystemService(SENSOR_SERVICE) as SensorManager }
 
     private var started: Boolean = false
     private var session_start_time = 0L
@@ -48,15 +56,35 @@ class MainActivity : ComponentActivity(), SensorEventListener {
     private var combinedTimeSeries = TimeSeries()
     private var lastAccelSeriesIndex = 0
 
+    private var useMLClassifier = false
+
 
     private val receiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             // Qui chiamo il metodo del bottone che voglio attivare
             onStartStopClicked()
-            if(!started && session_start_time != 0L) {
+            if (!started && session_start_time != 0L) {
                 onSendClicked()
             }
         }
+    }
+    @Composable
+    fun MainAppWrapper() {
+        fun f(x: Boolean) {useMLClassifier = x}
+
+        MainApp(
+            onPingClicked = ::onPingClicked,
+            onSendClicked = ::onSendClicked,
+            onStartStopClicked = ::onStartStopClicked,
+            onClassifyClicked = ::onClassifyClicked,
+            onLoadSeriesFromFile = ::onLoadSampleClicked,
+            onMLChange = ::f,
+            started = started,
+            value_bpm = lastHeart,
+            value_acc = lastAccel,
+            readyToClassify = combinedTimeSeries.data.isNotEmpty(),
+            useMLDefault = useMLClassifier
+        )
     }
 
     override fun onResume() {
@@ -88,32 +116,28 @@ class MainActivity : ComponentActivity(), SensorEventListener {
         setTheme(android.R.style.Theme_DeviceDefault)
 
         setContent {
-            MainApp(
-                onPingClicked = ::onPingClicked,
-                onSendClicked = ::onSendClicked,
-                onStartStopClicked = ::onStartStopClicked,
-                started = started
-            )
+            MainAppWrapper()
         }
     }
 
     private fun onStartStopClicked() {
         started = !started
-        if(started)
-        {
-            val sensorHeartRate = sensorManager.getDefaultSensor(Sensor.TYPE_HEART_RATE);
-            val sensorAccelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        if (started) {
+            val sensorHeartRate = sensorManager.getDefaultSensor(Sensor.TYPE_HEART_RATE)
+            val sensorAccelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
 
             val successHeart = sensorManager.registerListener(
                 this,
                 sensorHeartRate,
-                SensorManager.SENSOR_DELAY_NORMAL)
+                SensorManager.SENSOR_DELAY_NORMAL
+            )
             Log.i(TAG, "successHeart=$successHeart")
 
             val successAcc = sensorManager.registerListener(
                 this,
                 sensorAccelerometer,
-                SensorManager.SENSOR_DELAY_NORMAL)
+                SensorManager.SENSOR_DELAY_NORMAL
+            )
             Log.i(TAG, "successAccel=$successAcc")
 
             Log.i(TAG, "starting session....")
@@ -131,14 +155,7 @@ class MainActivity : ComponentActivity(), SensorEventListener {
         }
 
         setContent {
-            MainApp(
-                onPingClicked = ::onPingClicked,
-                onSendClicked = ::onSendClicked,
-                onStartStopClicked = ::onStartStopClicked,
-                started = started,
-                value_bpm = lastHeart,
-                value_acc = lastAccel
-            )
+            MainAppWrapper()
         }
     }
 
@@ -168,8 +185,12 @@ class MainActivity : ComponentActivity(), SensorEventListener {
 
     @SuppressLint("VisibleForTests")
     private fun onSendClicked() {
-        if(started || session_start_time == 0L) {
-            Toast.makeText(applicationContext, "PROIBITO INVIARE SESSIONE DURANTE SESSIONE IN CORSO!", Toast.LENGTH_SHORT).show()
+        if (started || session_start_time == 0L) {
+            Toast.makeText(
+                applicationContext,
+                "PROIBITO INVIARE SESSIONE DURANTE SESSIONE IN CORSO!",
+                Toast.LENGTH_SHORT
+            ).show()
             return
         }
 
@@ -195,13 +216,80 @@ class MainActivity : ComponentActivity(), SensorEventListener {
         }
     }
 
+    fun onClassifyClicked() {
+        if(combinedTimeSeries.data.isEmpty()) {
+            Toast.makeText(
+                applicationContext,
+                "NON HAI REGISTRATO NIENTE!!",
+                Toast.LENGTH_SHORT
+            ).show()
+            return
+        }
+
+        val classifier: Classifier
+        if (!useMLClassifier) {
+            classifier = ClassifierStatistical()
+            classifier.updateSSD(combinedTimeSeries)
+        } else {
+            classifier = ClassifierML(applicationContext)
+        }
+
+        val res = classifySeries(classifier, combinedTimeSeries)
+        val baseT = combinedTimeSeries.data[0].timestamp
+        var results: Array<Pair<Long, String>> = emptyArray()
+
+        for (i in res.indices) {
+            results += Pair(
+                baseT + 5*60*1000L*i.toLong(),
+                SleepStage.entries[res[i]].toString().removeSuffix("_SLEEP")
+            )
+        }
+
+        setContent {
+            ClassifySessionResults(
+                onBackClick = ::onExitClassifyResults,
+                data = results
+            )
+        }
+    }
+
+    fun onExitClassifyResults() {
+        setContent {
+            MainAppWrapper()
+        }
+    }
+
+    private fun onLoadSampleClicked() {
+        val fileLoader = FileLoader(
+            applicationContext,
+            "8692923_heartrate.txt",
+            "8692923_acceleration.txt"
+        )
+
+        combinedTimeSeries = fileLoader.loadData(60*5*1000L)
+
+        lastHeart = 999.9f
+        lastAccel = floatArrayOf(999.9f, 999.9f, 999.9f)
+        session_start_time = 60*5*1000L
+
+        setContent {
+            MainAppWrapper()
+        }
+
+        Toast.makeText(
+            applicationContext,
+            "Caricati ${combinedTimeSeries.data.size} elementi",
+            Toast.LENGTH_SHORT
+        ).show()
+    }
+
     var lastAccelSample = 0L
 
     override fun onSensorChanged(event: SensorEvent?) {
-        if(event == null)
+        if (event == null)
             return
 
-        if(event.sensor.type == Sensor.TYPE_HEART_RATE) {
+        if (event.sensor.type == Sensor.TYPE_HEART_RATE) {
             lastHeart = event.values[0]
             heartTimeSeries.add(floatArrayOf(lastHeart))
 
@@ -214,7 +302,7 @@ class MainActivity : ComponentActivity(), SensorEventListener {
             }
 
             // Compute average acceleration during period
-            for(i in lastAccelSeriesIndex+1..<accelTimeSeries.data.size) {
+            for (i in lastAccelSeriesIndex + 1..<accelTimeSeries.data.size) {
                 numerator[0] += accelTimeSeries.data[i].datum[0]
                 numerator[1] += accelTimeSeries.data[i].datum[1]
                 numerator[2] += accelTimeSeries.data[i].datum[2]
@@ -235,14 +323,7 @@ class MainActivity : ComponentActivity(), SensorEventListener {
         }
 
         setContent {
-            MainApp(
-                onPingClicked = ::onPingClicked,
-                onSendClicked = ::onSendClicked,
-                onStartStopClicked = ::onStartStopClicked,
-                started = started,
-                value_bpm = lastHeart,
-                value_acc = lastAccel
-            )
+            MainAppWrapper()
         }
     }
 

@@ -26,8 +26,6 @@ class ClassifierML(private val context: Context) : Classifier {
 
     private var tflite : Interpreter
 
-    private lateinit var modelName: String
-
     init {
         tflite = Interpreter(loadModelFile())
     }
@@ -132,7 +130,7 @@ class ClassifierStatistical() : Classifier {
         return sqrt(meanSquaredDifference)
     }
 
-    fun calculateAverageSDNN(sdnnValues: DoubleArray): Double {
+    private fun calculateAverageSDNN(sdnnValues: DoubleArray): Double {
         if(sdnnValues.size == 0)
             return 0.0
 
