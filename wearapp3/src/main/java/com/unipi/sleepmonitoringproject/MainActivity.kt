@@ -45,6 +45,8 @@ class MainActivity : ComponentActivity(), SensorEventListener {
 
     private var heartTimeSeries = TimeSeries()
     private var accelTimeSeries = TimeSeries()
+    private var combinedTimeSeries = TimeSeries()
+    private var lastAccelSeriesIndex = 0
 
 
     private val receiver = object : BroadcastReceiver() {
@@ -102,10 +104,16 @@ class MainActivity : ComponentActivity(), SensorEventListener {
             val sensorHeartRate = sensorManager.getDefaultSensor(Sensor.TYPE_HEART_RATE);
             val sensorAccelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 
-            val successHeart = sensorManager.registerListener(this, sensorHeartRate, SensorManager.SENSOR_DELAY_NORMAL)
+            val successHeart = sensorManager.registerListener(
+                this,
+                sensorHeartRate,
+                SensorManager.SENSOR_DELAY_NORMAL)
             Log.i(TAG, "successHeart=$successHeart")
 
-            val successAcc = sensorManager.registerListener(this, sensorAccelerometer, SensorManager.SENSOR_DELAY_NORMAL)
+            val successAcc = sensorManager.registerListener(
+                this,
+                sensorAccelerometer,
+                SensorManager.SENSOR_DELAY_NORMAL)
             Log.i(TAG, "successAccel=$successAcc")
 
             Log.i(TAG, "starting session....")
@@ -114,6 +122,8 @@ class MainActivity : ComponentActivity(), SensorEventListener {
             // Clearing old session
             heartTimeSeries = TimeSeries()
             accelTimeSeries = TimeSeries()
+            combinedTimeSeries = TimeSeries()
+            lastAccelSeriesIndex = 0
 
         } else {
             Log.i(TAG, "stopping session....")
@@ -167,8 +177,9 @@ class MainActivity : ComponentActivity(), SensorEventListener {
             try {
                 val request = PutDataMapRequest.create("/ping-pong").apply {
                     dataMap.putLong("start", session_start_time)
-                    dataMap.putDataMap("data_heart", heartTimeSeries.serializeToGoogle())
-                    dataMap.putDataMap("data_accel", accelTimeSeries.serializeToGoogle())
+                    dataMap.putDataMap("combined_series", combinedTimeSeries.serializeToGoogle())
+                    //dataMap.putDataMap("data_heart", heartTimeSeries.serializeToGoogle())
+                    //dataMap.putDataMap("data_accel", accelTimeSeries.serializeToGoogle())
                 }
                     .asPutDataRequest()
                     .setUrgent()
@@ -193,6 +204,27 @@ class MainActivity : ComponentActivity(), SensorEventListener {
         if(event.sensor.type == Sensor.TYPE_HEART_RATE) {
             lastHeart = event.values[0]
             heartTimeSeries.add(floatArrayOf(lastHeart))
+
+            val denominator = accelTimeSeries.size() - lastAccelSeriesIndex
+            val numerator = floatArrayOf(0.0f, 0.0f, 0.0f)
+
+            if (denominator <= 1) {
+                combinedTimeSeries.add(floatArrayOf(lastHeart) + lastAccel)
+                return
+            }
+
+            // Compute average acceleration during period
+            for(i in lastAccelSeriesIndex+1..<accelTimeSeries.data.size) {
+                numerator[0] += accelTimeSeries.data[i].datum[0]
+                numerator[1] += accelTimeSeries.data[i].datum[1]
+                numerator[2] += accelTimeSeries.data[i].datum[2]
+            }
+
+            numerator[0] /= denominator.toFloat()
+            numerator[1] /= denominator.toFloat()
+            numerator[2] /= denominator.toFloat()
+
+            combinedTimeSeries.add(floatArrayOf(lastHeart) + numerator)
         } else if (event.sensor.type == Sensor.TYPE_ACCELEROMETER) {
             if (event.timestamp - lastAccelSample <= 1e9)
                 return
