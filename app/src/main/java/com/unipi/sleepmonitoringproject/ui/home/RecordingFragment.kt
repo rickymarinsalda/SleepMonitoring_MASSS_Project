@@ -33,18 +33,21 @@ class RecordingFragment : Fragment() {
         (activity as MainActivity).supportActionBar?.hide()
         (activity as MainActivity).binding.appBarMain.fab.hide()
 
+        val activity_ = activity as MainActivity
+
         /* Set the listener for the stop button */
         val returnButton = view.findViewById<Button>(R.id.stop_button)
         returnButton.setOnClickListener {
 
             /* Show toolbar and recording button */
-            (activity as MainActivity).supportActionBar?.show()
-            (activity as MainActivity).binding.appBarMain.fab.show()
+            activity_.supportActionBar?.show()
+            activity_.binding.appBarMain.fab.show()
 
             /* Return to the home fragment */
             findNavController().navigateUp()
+
             /* Call onPongClick() */
-            (activity as MainActivity).onPongClick()
+            activity_.onPongClick()
 
         }
     }
