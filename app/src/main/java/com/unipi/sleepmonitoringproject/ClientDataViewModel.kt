@@ -35,7 +35,8 @@ class ClientDataViewModel(private val dbHelper: EventManagerDbHelper):
 
         dataEvents.forEach { event ->
             Log.i("DATA", "$event from ${event.dataItem.uri.path}")
-            if (event.dataItem.uri.path != "/ping-pong") return@forEach
+            if (event.dataItem.uri.path != "/ping-pong")
+                return@forEach
 
             val dataMap = DataMapItem.fromDataItem(event.dataItem).dataMap
             val db = dbHelper.writableDatabase
@@ -45,6 +46,8 @@ class ClientDataViewModel(private val dbHelper: EventManagerDbHelper):
                 Log.i("DATA", "Not a time-series!")
                 return@forEach
             }
+
+            // @TODO USE LIB FUNCTION INSTEAD OF THIS
 
             // Funzione per processare i dati
             fun processData(dataKey: String, insertFunction: (SQLiteDatabase, String, FloatArray) -> Unit) {
