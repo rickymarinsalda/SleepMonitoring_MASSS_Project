@@ -8,15 +8,23 @@ import java.io.FileInputStream
 import java.nio.ByteBuffer
 import java.nio.channels.FileChannel
 import kotlin.math.max
+import kotlin.math.pow
+import kotlin.math.sqrt
 
 
 interface Classifier{
     fun doInference(input : Array<FloatArray>): Int
 }
 
+enum class SleepStage(val stage: Int) {
+    AWAKE(0), LIGHT_SLEEP(1), DEEP_SLEEP(2), REM(3)
+}
+
+const val INTERVAL = 10*60*1_000L
+
 class ClassifierML(private val context: Context) : Classifier {
 
-    private lateinit var tflite : Interpreter
+    private var tflite : Interpreter
 
     private lateinit var modelName: String
 
@@ -69,4 +77,124 @@ class ClassifierML(private val context: Context) : Classifier {
     }
 }
 
-// @TODO add Ricky's alg
+class ClassifierStatistical() : Classifier {
+    companion object {
+        const val THETA_DEEP = 0.9688 // Threshold for deep sleep ERA 0.75
+        const val THETA_REM = 1.063 // Threshold for REM sleep  ERA 1.2
+    }
+
+    var avgSDNN = Float.POSITIVE_INFINITY // We agree!
+
+    private fun calculateRRIntervals(heartRate: FloatArray): List<Long> {
+        val RRIntervals = mutableListOf<Long>()
+
+        for (hr in heartRate) {
+            if (hr > 0) {
+                val RRInterval = (60 / hr * 1000).toLong()
+                RRIntervals.add(RRInterval)
+            }
+        }
+
+        return RRIntervals
+    }
+
+    private fun calculateMean(values: LongArray): Float {
+        var sum = 0.0f
+        for (value in values) {
+            sum += value
+        }
+        return sum / values.size
+    }
+    private fun calculateMean(values: FloatArray): Float {
+        var sum = 0.0f
+        for (value in values) {
+            sum += value
+        }
+        return sum / values.size
+    }
+
+    private fun calculateSDNN(RRIntervals: LongArray): Float {
+        if (RRIntervals.size <= 1)
+            return 0.0f
+
+        val meanRR = calculateMean(RRIntervals)
+        val differences = FloatArray(RRIntervals.size - 1)
+
+        for (i in 0 until RRIntervals.size - 1) {
+            differences[i] = (RRIntervals[i + 1] - RRIntervals[i]).toFloat()
+        }
+
+        for (i in differences.indices) {
+            differences[i] = (differences[i] - meanRR).pow(2)
+        }
+
+        val meanSquaredDifference = calculateMean(differences)
+        return sqrt(meanSquaredDifference)
+    }
+
+    fun calculateAverageSDNN(sdnnValues: DoubleArray): Double {
+        if(sdnnValues.size == 0)
+            return 0.0
+
+        var sum = 0.0
+        var count = 0L
+        for (sdnn in sdnnValues) {
+            sum += sdnn
+            if(sdnn != 0.0)
+                count++
+        }
+        return sum / sdnnValues.size
+    }
+
+    private fun classifySleepStage(sdnnValue: Float): Int {
+        val thetaDeep = avgSDNN * THETA_DEEP
+        val thetaRem = avgSDNN * THETA_REM
+        Log.d("AlgorithmResult", "ThetaRem: ${thetaRem}")
+        Log.d("AlgorithmResult", "thetaDeep: ${thetaDeep}")
+
+        when {
+            sdnnValue <= thetaDeep -> return SleepStage.DEEP_SLEEP.stage
+            sdnnValue >= thetaRem -> return SleepStage.REM.stage
+        }
+
+        return SleepStage.LIGHT_SLEEP.stage
+    }
+
+    fun updateSSD(series: TimeSeries) {
+        val baseT = series.data.get(0).timestamp
+        var currentChunk = 0UL
+        var numerator = 0.0
+        var bpms = floatArrayOf()
+
+        series.data.forEach {
+            if (((it.timestamp - baseT) / INTERVAL).toULong() != currentChunk) {
+                currentChunk ++
+
+                if(bpms.size == 0)
+                    return@forEach
+
+                val RRIntervals = calculateRRIntervals(bpms)
+                val RRIntervalsArray = RRIntervals.toLongArray()
+                val sdnn = calculateSDNN(RRIntervalsArray)
+
+                numerator += sdnn
+            }
+
+            bpms += floatArrayOf(it.datum[0])
+        }
+
+        avgSDNN = (numerator/(currentChunk + 1UL).toDouble()).toFloat()
+    }
+
+    override fun doInference(input: Array<FloatArray>): Int {
+        val bpms = input[0]
+
+        val RRIntervals = calculateRRIntervals(bpms)
+        // Convert RRIntervals to a double array
+        val RRIntervalsArray = RRIntervals.toLongArray()
+        val sdnn = calculateSDNN(RRIntervalsArray)
+
+        return classifySleepStage(sdnn)
+    }
+
+}

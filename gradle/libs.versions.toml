@@ -27,6 +27,7 @@ tensorflowLiteTaskVisionPlayServices = "0.4.4"
 playServicesTfliteGpu = "16.2.0"
 roomCompiler = "2.6.1"
 tensorflowLite = "2.16.1"
+roomPaging = "2.6.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -62,6 +63,7 @@ tensorflow-lite-task-vision-play-services = { group = "org.tensorflow", name = "
 play-services-tflite-gpu = { group = "com.google.android.gms", name = "play-services-tflite-gpu", version.ref = "playServicesTfliteGpu" }
 androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "roomCompiler" }
 tensorflow-lite = { group = "org.tensorflow", name = "tensorflow-lite", version.ref = "tensorflowLite" }
+androidx-room-paging = { group = "androidx.room", name = "room-paging", version.ref = "roomPaging" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
