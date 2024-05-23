@@ -57,6 +57,7 @@ class MainActivity : ComponentActivity(), SensorEventListener {
     private var lastAccelSeriesIndex = 0
 
     private var useMLClassifier = false
+    private var samplingRate = 0.0f
 
 
     private val receiver = object : BroadcastReceiver() {
@@ -71,6 +72,7 @@ class MainActivity : ComponentActivity(), SensorEventListener {
     @Composable
     fun MainAppWrapper() {
         fun f(x: Boolean) {useMLClassifier = x}
+        fun g(x: Float) {samplingRate = x}
 
         MainApp(
             onPingClicked = ::onPingClicked,
@@ -83,7 +85,8 @@ class MainActivity : ComponentActivity(), SensorEventListener {
             value_bpm = lastHeart,
             value_acc = lastAccel,
             readyToClassify = combinedTimeSeries.data.isNotEmpty(),
-            useMLDefault = useMLClassifier
+            useMLDefault = useMLClassifier,
+            samplingRate = samplingRate
         )
     }
 
@@ -129,14 +132,20 @@ class MainActivity : ComponentActivity(), SensorEventListener {
             val successHeart = sensorManager.registerListener(
                 this,
                 sensorHeartRate,
-                SensorManager.SENSOR_DELAY_NORMAL
+                if(samplingRate == 0.0f)
+                    SensorManager.SENSOR_DELAY_NORMAL
+                else
+                    samplingRate.toInt() * 1_000_000 // us
             )
             Log.i(TAG, "successHeart=$successHeart")
 
             val successAcc = sensorManager.registerListener(
                 this,
                 sensorAccelerometer,
-                SensorManager.SENSOR_DELAY_NORMAL
+                if(samplingRate == 0.0f)
+                    SensorManager.SENSOR_DELAY_NORMAL
+                else
+                    samplingRate.toInt() * 1_000_000 // us
             )
             Log.i(TAG, "successAccel=$successAcc")
 
@@ -290,6 +299,10 @@ class MainActivity : ComponentActivity(), SensorEventListener {
             return
 
         if (event.sensor.type == Sensor.TYPE_HEART_RATE) {
+            // misread
+            if (event.values[0] == 0.0f)
+                return
+
             lastHeart = event.values[0]
             heartTimeSeries.add(floatArrayOf(lastHeart))
 
@@ -314,7 +327,7 @@ class MainActivity : ComponentActivity(), SensorEventListener {
 
             combinedTimeSeries.add(floatArrayOf(lastHeart) + numerator)
         } else if (event.sensor.type == Sensor.TYPE_ACCELEROMETER) {
-            if (event.timestamp - lastAccelSample <= 1e9)
+            if (event.timestamp - lastAccelSample <= 250)
                 return
 
             lastAccelSample = event.timestamp
