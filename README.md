@@ -3,7 +3,7 @@
 Evaluation of power consumption when adopting different architectures, like moving part of the computation onto external devices (a smartphone) in Android sleep monitoring applications
 
 
-## Device Connection and Energy Consumption Experimentation
+## Energy Consumption Experimentation
 
 To monitor and analyze the energy consumption of algorithms on your smartwatch and smartphone, follow these steps:
 
