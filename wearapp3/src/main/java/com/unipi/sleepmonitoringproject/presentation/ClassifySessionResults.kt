@@ -118,7 +118,7 @@ fun ClassifySessionResultsWithDataPreview() {
     var series = arrayOf<Pair<Long, String>>()
     for (i in 0..SAMPLES_PREVIEW)
         series += Pair(
-            0L + i.toLong() * 1000L * 5L * 60L,
+            0L + i.toLong() * 1000L * 10L * 60L,
             stages[i % stages.size]
         )
 
