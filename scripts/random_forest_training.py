@@ -5,6 +5,8 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report, accuracy_score
 import joblib
 from imblearn.over_sampling import SMOTE
+from skl2onnx import convert_sklearn
+from skl2onnx.common.data_types import FloatTensorType
 
 ids = [1360686, 1449548, 1455390, 1818471, 2598705, 2638030, 3509524, 3997827, 4018081, 4314139, 4426783, 46343,
        5132496, 5383425, 5498603, 5797046, 6220552, 759667, 7749105, 781756, 8000685, 8173033, 8258170, 844359,
@@ -57,4 +59,10 @@ y_pred = model.predict(X_test)
 print("Valutazione sul set di test")
 print(classification_report(y_test, y_pred))
 
-joblib.dump(model, 'random_forest_sleep_classifier.pkl')
+# Convert the trained model to ONNX format
+initial_type = [('float_input', FloatTensorType([None, X_train.shape[1]]))]
+onnx_model = convert_sklearn(model, initial_types=initial_type)
+
+# Save the ONNX model to a binary file
+with open("random_forest_sleep_classifier_80t.onnx", "wb") as f:
+    f.write(onnx_model.SerializeToString())

@@ -1,9 +1,8 @@
 import pandas as pd
 import numpy as np
-from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import classification_report, accuracy_score
-import joblib
+from sklearn.metrics import classification_report
+import onnxruntime as ort
 from imblearn.over_sampling import SMOTE
 
 ids = [1360686, 1449548, 1455390, 1818471, 2598705, 2638030, 3509524, 3997827, 4018081, 4314139, 4426783, 46343,
@@ -49,12 +48,19 @@ X_res, y_res = sm.fit_resample(X, y)
 
 X_train, X_test, y_train, y_test = train_test_split(X_res, y_res, test_size=0.3, random_state=42)
 
-model = joblib.load('random_forest_sleep_classifier.pkl')
+sess = ort.InferenceSession('random_forest_sleep_classifier_80t.onnx')
 
-y_train_pred = model.predict(X_train)
+input_name = sess.get_inputs()[0].name
+
+def predict_with_onnx(data):
+    data = np.array(data, dtype=np.float32)
+    pred_onnx = sess.run(None, {input_name: data})
+    return pred_onnx[0]
+
+y_train_pred = predict_with_onnx(X_train)
 print("Valutazione sul set di training")
 print(classification_report(y_train, y_train_pred))
 
-y_pred = model.predict(X_test)
+y_pred = predict_with_onnx(X_test)
 print("Valutazione sul set di test")
 print(classification_report(y_test, y_pred))
