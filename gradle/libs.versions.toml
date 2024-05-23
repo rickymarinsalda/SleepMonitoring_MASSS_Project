@@ -28,6 +28,8 @@ playServicesTfliteGpu = "16.2.0"
 roomCompiler = "2.6.1"
 tensorflowLite = "2.16.1"
 roomPaging = "2.6.1"
+onnxruntimeAndroid = "1.18.0"
+onnxruntimeMobile = "1.18.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -64,6 +66,8 @@ play-services-tflite-gpu = { group = "com.google.android.gms", name = "play-serv
 androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "roomCompiler" }
 tensorflow-lite = { group = "org.tensorflow", name = "tensorflow-lite", version.ref = "tensorflowLite" }
 androidx-room-paging = { group = "androidx.room", name = "room-paging", version.ref = "roomPaging" }
+onnxruntime-android = { group = "com.microsoft.onnxruntime", name = "onnxruntime-android", version.ref = "onnxruntimeAndroid" }
+onnxruntime-mobile = { group = "com.microsoft.onnxruntime", name = "onnxruntime-mobile", version.ref = "onnxruntimeMobile" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

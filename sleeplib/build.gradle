@@ -36,6 +36,7 @@ dependencies {
     implementation libs.material
     implementation libs.gms.play.services.wearable
     implementation libs.androidx.room.paging
+    implementation libs.onnxruntime.mobile
     testImplementation libs.junit
     androidTestImplementation libs.androidx.junit
     androidTestImplementation libs.androidx.espresso.core
