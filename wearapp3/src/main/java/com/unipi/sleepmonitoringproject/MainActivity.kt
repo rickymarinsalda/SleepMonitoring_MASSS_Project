@@ -81,6 +81,7 @@ class MainActivity : ComponentActivity(), SensorEventListener {
             onClassifyClicked = ::onClassifyClicked,
             onLoadSeriesFromFile = ::onLoadSampleClicked,
             onMLChange = ::f,
+            onSamplingRateChange = ::g,
             started = started,
             value_bpm = lastHeart,
             value_acc = lastAccel,
@@ -128,6 +129,8 @@ class MainActivity : ComponentActivity(), SensorEventListener {
         if (started) {
             val sensorHeartRate = sensorManager.getDefaultSensor(Sensor.TYPE_HEART_RATE)
             val sensorAccelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+
+            Log.i(TAG, "Start sampling at $samplingRate")
 
             val successHeart = sensorManager.registerListener(
                 this,
