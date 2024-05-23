@@ -57,7 +57,7 @@ class ClassifierML(private val context: Context) : Classifier {
         val output = Array(1) { FloatArray(4) }
         tflite.run(input, output)
 
-        Log.i("MODELLOTFLITEBRUH", "Ran inference on ${output[0][0]}, ${output[0][1]}, ${output[0][2]}")
+       Log.i("MODELLOTFLITEBRUH", "Ran inference on ${output[0][0]}, ${output[0][1]}, ${output[0][2]}")
 
         val maxV = max(output[0][0], max(output[0][1], max(output[0][2], output[0][3])))
 
@@ -147,8 +147,8 @@ class ClassifierStatistical() : Classifier {
     private fun classifySleepStage(sdnnValue: Float): Int {
         val thetaDeep = avgSDNN * THETA_DEEP
         val thetaRem = avgSDNN * THETA_REM
-        Log.d("AlgorithmResult", "ThetaRem: ${thetaRem}")
-        Log.d("AlgorithmResult", "thetaDeep: ${thetaDeep}")
+        //Log.d("AlgorithmResult", "ThetaRem: ${thetaRem}")
+        //Log.d("AlgorithmResult", "thetaDeep: ${thetaDeep}")
 
         when {
             sdnnValue <= thetaDeep -> return SleepStage.DEEP_SLEEP.stage

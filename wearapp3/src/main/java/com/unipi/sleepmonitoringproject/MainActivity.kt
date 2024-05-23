@@ -148,7 +148,7 @@ class MainActivity : ComponentActivity(), SensorEventListener {
                 if(samplingRate == 0.0f)
                     SensorManager.SENSOR_DELAY_NORMAL
                 else
-                    samplingRate.toInt() * 1_000_000 // us
+                    (1_000_000 * samplingRate).toInt() // da Hz a microsecondi  quello che faceva dario-> //samplingRate.toInt() * 1_000_000 // us
             )
             Log.i(TAG, "successAccel=$successAcc")
 
@@ -245,7 +245,7 @@ class MainActivity : ComponentActivity(), SensorEventListener {
         } else {
             classifier = ClassifierML(applicationContext)
         }
-
+        
         val res = classifySeries(classifier, combinedTimeSeries)
         val baseT = combinedTimeSeries.data[0].timestamp
         var results: Array<Pair<Long, String>> = emptyArray()

@@ -31,7 +31,13 @@ import androidx.lifecycle.lifecycleScope
 import com.google.android.gms.wearable.CapabilityClient
 import com.google.android.gms.wearable.PutDataMapRequest
 import com.google.android.gms.wearable.Wearable
+import com.unipi.sleepmonitoring_masss_library.ClassifierML
+import com.unipi.sleepmonitoring_masss_library.ClassifierStatistical
+import com.unipi.sleepmonitoring_masss_library.FileLoader
+import com.unipi.sleepmonitoring_masss_library.SleepStage
 import com.unipi.sleepmonitoring_masss_library.TimeSeries
+import com.unipi.sleepmonitoring_masss_library.classifySeries
+import com.unipi.sleepmonitoring_masss_library.db.insertIntoDB
 import com.unipi.sleepmonitoringproject.algorithm_1.SleepStageClassifier
 import com.unipi.sleepmonitoringproject.databinding.ActivityMainBinding
 import com.unipi.sleepmonitoringproject.db.EventManagerContract
@@ -107,9 +113,11 @@ class MainActivity : AppCompatActivity() {
 
         dbHelper = EventManagerDbHelper(this) // inizializzo db
 
-        //clearDatabase(dbHelper) // PULISCE IL DB
+//        clearDatabase(dbHelper) // PULISCE IL DB
         //insertHeartRateDataFromFile(this, "8692923_heartrate.txt") // AGGIUNGE AL DB ROBA DA FILE IN /ASSETS
         //insertHeartRateDataFromFile(this, "9618981_heartrate.txt") // AGGIUNGE AL DB ROBA DA FILE IN /ASSETS
+
+
 
 
         //enableEdgeToEdge()
@@ -120,16 +128,56 @@ class MainActivity : AppCompatActivity() {
 
         setSupportActionBar(binding.appBarMain.toolbar)
 
+        val fileLoader = FileLoader(
+            applicationContext,
+            "8692923_heartrate.txt",
+            "8692923_acceleration.txt"
+        )
+
+        val combinedTimeSeries = fileLoader.loadData(60*5*1000L)
+
         binding.appBarMain.fab.setOnClickListener { view ->
             //TODO
-            onPongClick()
+//            onPongClick()
             Snackbar.make(view, "Start to record your sleep data", Snackbar.LENGTH_LONG)
                 .setAction("Action", null)
                 .setAnchorView(R.id.fab).show()
+//
+//            /* Open the recording fragment */
+//            val navController = findNavController(R.id.nav_host_fragment_content_main)
+//            navController.navigate(R.id.action_nav_home_to_recordingFragment)
 
-            /* Open the recording fragment */
-            val navController = findNavController(R.id.nav_host_fragment_content_main)
-            navController.navigate(R.id.action_nav_home_to_recordingFragment)
+            val classifier = ClassifierML(applicationContext)
+
+
+           // val statclass = ClassifierStatistical()
+          //  statclass.updateSSD(combinedTimeSeries)
+
+
+            for(i in 0..<1000) {
+                //val classArray2 = classifySeries(statclass, combinedTimeSeries)
+
+                val classArray1 = classifySeries(classifier, combinedTimeSeries)
+
+
+                val classArray = classArray1
+
+                val baseT = combinedTimeSeries.data[0].timestamp
+                var results: Array<Pair<Long, String>> = emptyArray()
+
+                for (i in classArray.indices) {
+                    results += Pair(
+                        baseT + 5*60*1000L*i.toLong(),
+                        SleepStage.entries[classArray[i]].toString().removeSuffix("_SLEEP")
+                    )
+                }
+                for (i in results.indices) {
+                    Log.d(TAG, results[i].first.toString() + ": " + results[i].second)
+                }
+            }
+            Log.d(TAG, "FINITO STACCA IL TEST")
+
+//            Log.d(TAG, classArray.toString())
         }
         val drawerLayout: DrawerLayout = binding.drawerLayout
         val navView: NavigationView = binding.navView

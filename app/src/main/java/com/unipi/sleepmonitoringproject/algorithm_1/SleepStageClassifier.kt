@@ -107,8 +107,8 @@ class SleepStageClassifier {
         fun classifySleepStage(avgSDNN: Double, sdnnValue_nth: Double): SleepStage {
             val thetaDeep = avgSDNN * THETA_DEEP
             val thetaRem = avgSDNN * THETA_REM
-            Log.d("AlgorithmResult", "ThetaRem: ${thetaRem}")
-            Log.d("AlgorithmResult", "thetaDeep: ${thetaDeep}")
+            //Log.d("AlgorithmResult", "ThetaRem: ${thetaRem}")
+            //Log.d("AlgorithmResult", "thetaDeep: ${thetaDeep}")
 
             when {
                 sdnnValue_nth <= thetaDeep -> return SleepStage.DEEP
