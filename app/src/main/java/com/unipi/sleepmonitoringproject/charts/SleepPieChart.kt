@@ -1,4 +1,4 @@
-package com.unipi.sleepmonitoringproject.stats
+package com.unipi.sleepmonitoringproject.charts
 
 import android.graphics.Color
 import android.graphics.Typeface

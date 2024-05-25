@@ -17,20 +17,18 @@ import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.unipi.sleepmonitoring_masss_library.db.EventManagerDbHelper
-import com.unipi.sleepmonitoringproject.MainActivity
 import com.unipi.sleepmonitoringproject.R
 import com.unipi.sleepmonitoringproject.databinding.FragmentHomeBinding
-import com.unipi.sleepmonitoringproject.stats.SleepLineChart
+import com.unipi.sleepmonitoringproject.charts.SleepLineChart
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
-import com.unipi.sleepmonitoringproject.stats.SleepPieChart
+import com.unipi.sleepmonitoringproject.charts.SleepPieChart
 import kotlin.math.roundToInt
 import androidx.fragment.app.activityViewModels
-import com.unipi.sleepmonitoring_masss_library.ClassifierML
 import com.unipi.sleepmonitoring_masss_library.DbLoader
 import com.unipi.sleepmonitoringproject.SharedViewModel
-import com.unipi.sleepmonitoringproject.stats.getEndOfDay
-import com.unipi.sleepmonitoringproject.stats.getStartOfYesterday
+import com.unipi.sleepmonitoringproject.charts.getEndOfDay
+import com.unipi.sleepmonitoringproject.charts.getStartOfYesterday
 
 
 class HomeFragment : Fragment() {
