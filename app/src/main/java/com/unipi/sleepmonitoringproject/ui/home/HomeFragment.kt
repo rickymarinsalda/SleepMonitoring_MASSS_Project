@@ -146,15 +146,15 @@ class HomeFragment : Fragment() {
             sleepInfoLayout.visibility = View.VISIBLE
 
             /* Total time in bed */
-            val startTime = lineChart.getStartTime().timeInMillis
+            val startTime = lineChart.getStartTime().timeInMillis.toFloat()
 
-            val endTime = lineChart.getEndTime().timeInMillis
+            val endTime = lineChart.getEndTime().timeInMillis.toFloat()
             val totTime = (endTime - startTime)/3600000.0
             val totTimeTextView: TextView = root.findViewById(R.id.time_in_bed)
             totTimeTextView.text = getString(R.string.time_asleep, totTime)
 
             /* Time to fall asleep */
-            val startTimeAsleep = lineChart.getStartTimeAsleep()
+            val startTimeAsleep = lineChart.getStartTimeAsleep().toFloat()
             val differenceInMillis = startTimeAsleep - startTime
             val totTimeToFallAsleep = ((differenceInMillis / (1000.0 * 60.0)) * 10.0).roundToInt() / 10.0
             val timeToFallAsleepTextView: TextView = root.findViewById(R.id.time_to_fall_asleep)

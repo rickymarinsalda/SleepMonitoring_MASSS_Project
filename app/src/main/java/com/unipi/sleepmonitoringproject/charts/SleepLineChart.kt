@@ -23,7 +23,7 @@ class SleepLineChart(val rootView: View, val lastNightData: TimeSeries) {
     private val lineChart: LineChart = rootView.findViewById(R.id.line_chart)
     private lateinit var startTime : Calendar
     private lateinit var endTime : Calendar
-    private var startTimeAsleep: Long = -1
+    private var startTimeAsleep: Double = 0.0
     private var deepSleepTotal: Double = 0.0
     private var lightSleepTotal: Double = 0.0
     private var remSleepTotal: Double = 0.0
@@ -94,7 +94,7 @@ class SleepLineChart(val rootView: View, val lastNightData: TimeSeries) {
             lineChart.axisLeft.textColor = Color.WHITE
 
             // Customize line chart
-            val labels = listOf("Profondo","REM", "Leggero", "Veglia")
+            val labels = listOf("Deep","REM", "Light", "Wake")
             yAxis.valueFormatter = object : ValueFormatter() {
                 override fun getFormattedValue(value: Float): String {
                     val index = value.toInt()
@@ -147,6 +147,18 @@ class SleepLineChart(val rootView: View, val lastNightData: TimeSeries) {
         remSleepTotal = sleepTotals[1] ?: 0.0
         lightSleepTotal = sleepTotals[2] ?: 0.0
         awakeTotal = sleepTotals[3] ?: 0.0
+        startTimeAsleep = findFirstAsleepTimestamp(sleepData)
+    }
+
+    private fun findFirstAsleepTimestamp(sleepData: ArrayList<Entry>): Double {
+
+        for (entry in sleepData) {
+            val sleepType = entry.y.toInt()
+            if (sleepType != 3) { // Not awake
+                return entry.x.toDouble()
+            }
+        }
+        return sleepData.firstOrNull()?.x?.toDouble() ?: 0.0
     }
 
     private fun generateFullNightData(): ArrayList<Entry> {
@@ -156,16 +168,20 @@ class SleepLineChart(val rootView: View, val lastNightData: TimeSeries) {
         val classifier = ClassifierML(rootView.context)
 
         // Get the start and end timestamps for the last night
-        val res = classifySeries(classifier,lastNightData)
+        val res = classifySeries(classifier, lastNightData)
         startTime = getInstance()
         endTime = getInstance()
         endTime.timeInMillis = lastNightData.data[0].timestamp
         startTime.timeInMillis = lastNightData.data[0].timestamp
         val startTimestamp = startTime.clone() as Calendar
 
-        for(i in res.indices) {
-            startTimestamp.add(MINUTE, 10) // Add 10 minutes to the start timestamp
-            values.add(Entry(startTimestamp.timeInMillis.toFloat(), res[i].toFloat()))
+        // Invert the y values here
+        for (i in res.indices) {
+            values.add(Entry(startTimestamp.timeInMillis.toFloat(), 3 - res[i].toFloat())) // Invert y values
+
+            //if the next element exists:
+            if(i+1 < res.size)
+                startTimestamp.add(MINUTE, 10) // Add 10 minutes to the start timestamp
         }
         endTime = startTimestamp
         return values
@@ -179,7 +195,7 @@ class SleepLineChart(val rootView: View, val lastNightData: TimeSeries) {
         return endTime
     }
 
-    fun getStartTimeAsleep(): Long {
+    fun getStartTimeAsleep(): Double {
         return startTimeAsleep
     }
 
@@ -208,10 +224,6 @@ class SleepTimestampFormatter : ValueFormatter() {
     }
 }
 
-/*
-      Codice aggiunto per prendere dal db + alg + dati
-*/
-
 fun getStartOfYesterday(timestamp: Long): Long {
     val calendar = getInstance()
     calendar.timeInMillis = timestamp
@@ -232,9 +244,3 @@ fun getEndOfDay(timestamp: Long): Long {
     calendar.set(MILLISECOND, 999)
     return calendar.timeInMillis
 }
-
-
-
-/*
--------------------------------------------------
-*/
