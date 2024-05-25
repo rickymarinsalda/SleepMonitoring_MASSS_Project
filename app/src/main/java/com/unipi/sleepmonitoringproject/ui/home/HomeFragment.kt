@@ -4,6 +4,7 @@ import android.graphics.Color
 import android.graphics.Typeface
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -15,6 +16,8 @@ import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import com.unipi.sleepmonitoring_masss_library.db.EventManagerDbHelper
+import com.unipi.sleepmonitoringproject.MainActivity
 import com.unipi.sleepmonitoringproject.R
 import com.unipi.sleepmonitoringproject.databinding.FragmentHomeBinding
 import com.unipi.sleepmonitoringproject.stats.SleepLineChart
@@ -22,6 +25,13 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import com.unipi.sleepmonitoringproject.stats.SleepPieChart
 import kotlin.math.roundToInt
+import androidx.fragment.app.activityViewModels
+import com.unipi.sleepmonitoring_masss_library.ClassifierML
+import com.unipi.sleepmonitoring_masss_library.DbLoader
+import com.unipi.sleepmonitoringproject.SharedViewModel
+import com.unipi.sleepmonitoringproject.stats.getEndOfDay
+import com.unipi.sleepmonitoringproject.stats.getStartOfYesterday
+
 
 class HomeFragment : Fragment() {
 
@@ -32,7 +42,8 @@ class HomeFragment : Fragment() {
     private var dataAvailable: Boolean = true
 
     private lateinit var root: View
-
+    private val sharedViewModel: SharedViewModel by activityViewModels()
+    private lateinit var dbHelper: EventManagerDbHelper
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -44,6 +55,7 @@ class HomeFragment : Fragment() {
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
         root = binding.root
 
+        dbHelper = sharedViewModel.dbHelper ?: throw IllegalStateException("dbHelper non dovrebbe essere null")
         showLastNight()
 
         return root
@@ -53,8 +65,18 @@ class HomeFragment : Fragment() {
     private fun showLastNight() {
         val constraintLayout: ConstraintLayout = root.findViewById(R.id.chart_parent)
 
+        val loader = DbLoader(dbHelper)
+
+        val currentDate = System.currentTimeMillis() // data corrente in millisecondi
+        val startOfYesterday = getStartOfYesterday(currentDate)
+
+        val endOfToday = getEndOfDay(currentDate)
+
+        val lastNightData = loader.loadData(startOfYesterday,endOfToday)
+
+        Log.i("TEST TEST TEST", "PROVA LAST NIGHT SIZE DATA STAMPA : "+ lastNightData.size())
         /* If the user collected some data */
-        if(dataAvailable) {
+        if(lastNightData.size() != 0) {
 
             /* Creation of the title */
             val lastNightTitle = TextView(context)
@@ -117,7 +139,9 @@ class HomeFragment : Fragment() {
             constraintSet.applyTo(constraintLayout)
 
             /* Creation of the sleep line chart */
-            val lineChart = SleepLineChart(root)
+            //val dbHelper = EventManagerDbHelper(root.context) // inizializzo db
+
+            val lineChart = SleepLineChart(root, lastNightData)
 
             /* Set sleep informations views as visible */
             val sleepInfoLayout: LinearLayout = root.findViewById(R.id.sleep_info_layout)
@@ -125,6 +149,7 @@ class HomeFragment : Fragment() {
 
             /* Total time in bed */
             val startTime = lineChart.getStartTime().timeInMillis
+
             val endTime = lineChart.getEndTime().timeInMillis
             val totTime = (endTime - startTime)/3600000.0
             val totTimeTextView: TextView = root.findViewById(R.id.time_in_bed)
