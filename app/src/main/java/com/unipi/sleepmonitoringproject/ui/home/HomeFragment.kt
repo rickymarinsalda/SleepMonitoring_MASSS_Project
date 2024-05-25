@@ -37,12 +37,10 @@ class HomeFragment : Fragment() {
 
     private val binding get() = _binding!!
 
-    private var dataAvailable: Boolean = true
-
     private lateinit var root: View
     private val sharedViewModel: SharedViewModel by activityViewModels()
     private lateinit var dbHelper: EventManagerDbHelper
-    @RequiresApi(Build.VERSION_CODES.O)
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -59,7 +57,6 @@ class HomeFragment : Fragment() {
         return root
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
     private fun showLastNight() {
         val constraintLayout: ConstraintLayout = root.findViewById(R.id.chart_parent)
 
@@ -95,9 +92,8 @@ class HomeFragment : Fragment() {
             /* Creation of the current date TextView */
             val currentDateTextView = TextView(context)
             currentDateTextView.id = R.id.currentDateTextView
-            val currentDate = LocalDate.now()
             val formatter = DateTimeFormatter.ofPattern("dd MMMM yyyy")
-            val currentDateText = currentDate.format(formatter)
+            val currentDateText = LocalDate.now().format(formatter)
             currentDateTextView.text = currentDateText
             currentDateTextView.textAlignment = TextView.TEXT_ALIGNMENT_CENTER
             currentDateTextView.setTextColor(Color.rgb(174, 193, 232))

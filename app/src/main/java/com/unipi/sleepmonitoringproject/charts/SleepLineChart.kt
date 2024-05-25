@@ -198,22 +198,6 @@ class SleepLineChart(val rootView: View, val lastNightData: TimeSeries) {
     fun getStartTimeAsleep(): Double {
         return startTimeAsleep
     }
-
-    fun getDeepSleepTotal(): Double {
-        return deepSleepTotal
-    }
-
-    fun getLightSleepTotal(): Double {
-        return lightSleepTotal
-    }
-
-    fun getRemSleepTotal(): Double {
-        return remSleepTotal
-    }
-
-    fun getAwakeTotal(): Double {
-        return awakeTotal
-    }
 }
 
 class SleepTimestampFormatter : ValueFormatter() {
