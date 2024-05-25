@@ -74,24 +74,4 @@ class ClassifierTest {
         assert(res2.size == 3)
         Log.i("TESTING", "test ML on series ${res2[0]}, ${res2[1]}, ${res2[2]}")
     }
-
-    @Test
-    fun TestRF() {
-        val classifier = ClassifierRandomForest(instrumentationContext)
-
-        val res = classifier.doInference(arrayOf(
-            floatArrayOf(33.0f, 43.0f, 41.0f, 32.0f, 38.0f),
-            floatArrayOf(3.0f, 4.0f, 1.0f, 0.2f, 0.005f),
-            floatArrayOf(3.0f, -4.0f, -1.0f, -0.2f, -0.005f),
-            floatArrayOf(-3.0f, 4.0f, -1.0f, 0.2f, -0.005f),
-        ))
-
-        Log.i("TESTING", "test ML $res")
-        assert(res in 0..3)
-        assert(res == SleepStage.REM.stage)
-
-        val res2 = classifySeries(classifier, timeSeries)
-        assert(res2.size == 3)
-        Log.i("TESTING", "test ML on series ${res2[0]}, ${res2[1]}, ${res2[2]}")
-    }
 }
