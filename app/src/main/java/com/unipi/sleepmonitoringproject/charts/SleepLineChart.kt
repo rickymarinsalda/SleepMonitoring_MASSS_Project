@@ -1,10 +1,7 @@
-package com.unipi.sleepmonitoringproject.stats
+package com.unipi.sleepmonitoringproject.charts
 
-import android.database.Cursor
 import android.graphics.Color
 import android.graphics.Typeface
-import android.provider.BaseColumns
-import android.util.Log
 import android.view.View
 import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.components.XAxis
@@ -14,19 +11,11 @@ import com.github.mikephil.charting.data.LineDataSet
 import java.util.*
 import com.github.mikephil.charting.formatter.ValueFormatter
 import com.unipi.sleepmonitoring_masss_library.ClassifierML
-import com.unipi.sleepmonitoring_masss_library.DbLoader
 import com.unipi.sleepmonitoring_masss_library.TimeSeries
 import com.unipi.sleepmonitoring_masss_library.classifySeries
-import com.unipi.sleepmonitoringproject.MainActivity
 import com.unipi.sleepmonitoringproject.R
-import com.unipi.sleepmonitoring_masss_library.db.EventManagerDbHelper
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
 import java.text.SimpleDateFormat
 import java.util.Calendar.*
-import kotlin.coroutines.coroutineContext
 
 class SleepLineChart(val rootView: View, val lastNightData: TimeSeries) {
 
@@ -75,27 +64,37 @@ class SleepLineChart(val rootView: View, val lastNightData: TimeSeries) {
             // Add data
             lineChart.data = data
 
+            // Disable legend
             lineChart.legend.isEnabled = false
 
+            // Customize axis view
             lineChart.xAxis.isEnabled = true
             lineChart.axisLeft.isEnabled = true
 
+            // Customize x-axis
             val xAxis = lineChart.xAxis
             xAxis.valueFormatter = SleepTimestampFormatter()
             xAxis.setDrawLabels(true)
             xAxis.setDrawAxisLine(false)
             xAxis.setDrawGridLines(true)
             xAxis.position = XAxis.XAxisPosition.BOTTOM
+            xAxis.textColor = Color.WHITE
+            lineChart.animateX(2500)
 
+            // Customize y-axis
             val yAxis = lineChart.axisLeft
-            //yAxis.valueFormatter = SleepTypeValueFormatter()
             yAxis.setDrawLabels(true)
             yAxis.setDrawAxisLine(true)
             yAxis.setDrawGridLines(false)
             yAxis.axisMinimum = -0.5f
             yAxis.axisMaximum = 3.5f
+            yAxis.granularity = 1f
+            yAxis.setCenterAxisLabels(true)
+            lineChart.axisRight.isEnabled = false
+            lineChart.axisLeft.textColor = Color.WHITE
 
-            val labels = listOf("Leggero", "REM", "Profondo", "Veglia")
+            // Customize line chart
+            val labels = listOf("Profondo","REM", "Leggero", "Veglia")
             yAxis.valueFormatter = object : ValueFormatter() {
                 override fun getFormattedValue(value: Float): String {
                     val index = value.toInt()
@@ -106,16 +105,8 @@ class SleepLineChart(val rootView: View, val lastNightData: TimeSeries) {
                     }
                 }
             }
-            yAxis.granularity = 1f
-            yAxis.setCenterAxisLabels(true)
 
-            lineChart.axisRight.isEnabled = false
-            lineChart.animateX(2500)
-
-            lineChart.xAxis.textColor = Color.WHITE
-            lineChart.axisLeft.textColor = Color.WHITE
             lineChart.setViewPortOffsets(150F, 50F, 100F, 100F)
-
             lineChart.setDrawBorders(false)
         }
     }
@@ -123,11 +114,12 @@ class SleepLineChart(val rootView: View, val lastNightData: TimeSeries) {
 
     private fun getData(): LineData {
 
+        // Generate data and calculate sleep totals
         val values = generateFullNightData()
         calculateSleepTotals(values)
 
+        // Customize line chart
         val set1 = LineDataSet(values, "Last night of sleep")
-
         set1.lineWidth = 1.75f
         set1.setDrawCircles(false)
         set1.circleRadius = 0f
@@ -148,7 +140,7 @@ class SleepLineChart(val rootView: View, val lastNightData: TimeSeries) {
         for (entry in sleepData) {
             val sleepType = entry.y.toInt()
             val sleepDuration = sleepTotals.getValue(sleepType)
-            sleepTotals[sleepType] = sleepDuration + 0.5 // Incrementa la durata di ciascun tipo di sonno di 0.5 (30 minuti)
+            sleepTotals[sleepType] = sleepDuration + 0.5 // Add 0.5 minutes for each entry
         }
 
         deepSleepTotal = sleepTotals[0] ?: 0.0
@@ -160,11 +152,10 @@ class SleepLineChart(val rootView: View, val lastNightData: TimeSeries) {
     private fun generateFullNightData(): ArrayList<Entry> {
         val values = ArrayList<Entry>()
 
-        /*
-        Codice aggiunto per prendere dal db + alg + dati
-*/
+        // Create a new classifier instance
         val classifier = ClassifierML(rootView.context)
 
+        // Get the start and end timestamps for the last night
         val res = classifySeries(classifier,lastNightData)
         startTime = getInstance()
         endTime = getInstance()
@@ -172,54 +163,12 @@ class SleepLineChart(val rootView: View, val lastNightData: TimeSeries) {
         startTime.timeInMillis = lastNightData.data[0].timestamp
         val startTimestamp = startTime.clone() as Calendar
 
-
-        for(i in res.indices){
-            startTimestamp.add(MINUTE, 10) // Aggiunge 10 minuti al timestamp
+        for(i in res.indices) {
+            startTimestamp.add(MINUTE, 10) // Add 10 minutes to the start timestamp
             values.add(Entry(startTimestamp.timeInMillis.toFloat(), res[i].toFloat()))
         }
         endTime = startTimestamp
         return values
-
-        /*
-        -------------------------------------------------
-        */
-
-
-
-/*
-        val random = Random()
-        startTime = getInstance()
-        startTime.set(2024, MAY, 24, 22, 0) // Data e ora di inizio del sonno
-        endTime = getInstance()
-        endTime.set(2024, MAY, 26, 6, 0) // Data e ora di fine del sonno
-        val sleepPhaseDuration = 30 * 60 * 1000 // 30 minuti
-
-        val currentTime = startTime.clone() as Calendar
-        while (currentTime.before(endTime)) {
-            val timestamp = currentTime.timeInMillis
-
-            // Generazione casuale del tipo di sonno
-            val sleepType = random.nextInt(4)
-
-            // Se il tipo di sonno non è "awake", registra il timestamp del primo dato non "awake"
-            if (sleepType == 3 && startTimeAsleep.toInt() == -1) {
-                startTimeAsleep = timestamp
-            }
-
-            // Aggiunta dei dati all'elenco di valori con etichetta
-            val fTimestamp = timestamp.toFloat()
-            val fSleepType = sleepType.toFloat()
-            val newEntry = Entry(fTimestamp, fSleepType)
-            println(newEntry)
-            values.add(newEntry)
-
-            // Avanzamento del tempo di una durata fissa per ogni fase del sonno
-            currentTime.timeInMillis += sleepPhaseDuration
-
-        }
-        return values
-*/
-
     }
 
     fun getStartTime() : Calendar {
