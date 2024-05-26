@@ -51,7 +51,6 @@ class StatsFragment : Fragment() {
 
         root = binding.root
 
-        //barChart = SleepBarChart(root)
         // Inflate the bar_chart layout and initialize SleepBarChart
         barChartLayout = inflater.inflate(R.layout.bar_chart, container, false)
         barChart = SleepBarChart(barChartLayout)
@@ -130,8 +129,6 @@ class StatsFragment : Fragment() {
             constraintSet.applyTo(constraintLayout)
 
             /* Creation of the sleep line chart */
-            //val lineChart = SleepLineChart(root)
-            //val barChart = SleepBarChart(root)
 
             /* Set sleep informations views as visible */
             val sleepInfoLayout: LinearLayout = barChartLayout.findViewById(R.id.bar_sleep_info_layout)
@@ -152,9 +149,7 @@ class StatsFragment : Fragment() {
             timeToFallAsleepTextView.text = getString(R.string.to_fall_asleep, totTimeToFallAsleep)
 
             // Assuming there is a container or a placeholder in fragment_stats.xml to add the bar chart.
-            //binding.barChartContainer.addView(barChart)
             binding.barChartContainer.addView(barChartLayout)
-            //binding.barChartContainer.addView(otherLayout)
             /* Creation of the pie chart */
             SleepPieChart(root)
         }

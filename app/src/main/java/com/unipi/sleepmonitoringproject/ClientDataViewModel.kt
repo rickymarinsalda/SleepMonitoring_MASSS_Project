@@ -1,7 +1,5 @@
 package com.unipi.sleepmonitoringproject
 
-import android.content.ContentValues
-import android.database.sqlite.SQLiteDatabase
 import android.util.Log
 import androidx.lifecycle.ViewModel
 
@@ -13,12 +11,9 @@ import com.google.android.gms.wearable.DataMap
 import com.google.android.gms.wearable.DataMapItem
 import com.google.android.gms.wearable.MessageClient
 import com.google.android.gms.wearable.MessageEvent
-import com.google.android.gms.wearable.PutDataMapRequest
 import com.unipi.sleepmonitoring_masss_library.TimeSeries
 import com.unipi.sleepmonitoring_masss_library.db.insertIntoDB
-import com.unipi.sleepmonitoringproject.db.EventManagerContract
 import com.unipi.sleepmonitoringproject.db.EventManagerDbHelper
-import java.text.SimpleDateFormat
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 

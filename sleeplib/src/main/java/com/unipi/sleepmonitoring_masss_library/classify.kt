@@ -40,9 +40,7 @@ fun classifySeries(classifier: Classifier, series: TimeSeries): IntArray {
 }
 
 fun sampleNValuesFromArray(arr_: IntArray, n: Int): List<Int> {
-    /*if (n > arr.size) {
-        throw IllegalArgumentException("Sample size cannot be greater than array size.")
-    }*/
+
     var arr = arr_
     while(arr.size < 5) {
         arr.shuffle()

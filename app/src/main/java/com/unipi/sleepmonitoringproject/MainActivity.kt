@@ -31,7 +31,6 @@ import androidx.lifecycle.lifecycleScope
 import com.google.android.gms.wearable.CapabilityClient
 import com.google.android.gms.wearable.PutDataMapRequest
 import com.google.android.gms.wearable.Wearable
-import com.unipi.sleepmonitoring_masss_library.TimeSeries
 import com.unipi.sleepmonitoringproject.algorithm_1.SleepStageClassifier
 import com.unipi.sleepmonitoringproject.databinding.ActivityMainBinding
 import com.unipi.sleepmonitoringproject.db.EventManagerContract
@@ -95,13 +94,13 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-            Log.d(MainActivity.TAG, "Requirin permission!")
+            Log.d(TAG, "Requirin permission!")
             ActivityCompat.requestPermissions(
                 this,
                 arrayOf(android.Manifest.permission.WRITE_EXTERNAL_STORAGE),
                 1)
         } else {
-            Log.d(MainActivity.TAG, "You have already permission!")
+            Log.d(TAG, "You have already permission!")
         }
 
 
@@ -111,17 +110,12 @@ class MainActivity : AppCompatActivity() {
         //insertHeartRateDataFromFile(this, "8692923_heartrate.txt") // AGGIUNGE AL DB ROBA DA FILE IN /ASSETS
         //insertHeartRateDataFromFile(this, "9618981_heartrate.txt") // AGGIUNGE AL DB ROBA DA FILE IN /ASSETS
 
-
-        //enableEdgeToEdge()
-
-
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         setSupportActionBar(binding.appBarMain.toolbar)
 
         binding.appBarMain.fab.setOnClickListener { view ->
-            //TODO
             onPongClick()
             Snackbar.make(view, "Start to record your sleep data", Snackbar.LENGTH_LONG)
                 .setAction("Action", null)
@@ -191,51 +185,24 @@ class MainActivity : AppCompatActivity() {
                 val value = event.value.toDouble()
                 val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
                 val timestamp_stringa = dateFormat.format(Date(timestamp))
-                // Log.d("DatabaseTest", "Timestamp: $timestamp_stringa, Value: $value")
             }
 
-            // val itemIds = queryDatabaseAndExtractIds(dbHelper) // questa è una query d'esempio per vedè se va
             // Chiamata all'algoritmo
 
             val sleepStages = algorithm_1(sleepEvents)
-            /*
-
-            val classifierML = ClassifierML(context = this@PingActivity)
-
-            var sleepStages = intArrayOf()
-
-            for (i in sleepEvents.indices step 5) {
-                if (i + 4 >= sleepEvents.size)
-                    continue
-
-                val bpms = floatArrayOf(
-                    sleepEvents[i+0].value,
-                    sleepEvents[i+1].value,
-                    sleepEvents[i+2].value,
-                    sleepEvents[i+3].value,
-                    sleepEvents[i+4].value,
-                    )
-
-                val assurdo = classifierML.doInference(bpms)
-
-                Log.d(TAG, "Assurdo[$i] -> $assurdo")
-
-                sleepStages += assurdo
-            }
-            */
 
             // Creazione del file di output
             // Percorso della directory principale della scheda SD
             val sdCardDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS)
             val outputFileName = "output_sonno.txt"
 
-            Log.d(MainActivity.TAG, "====================" + sdCardDirectory.toString())
+            Log.d(TAG, "====================" + sdCardDirectory.toString())
 
             // Creazione del file di output nella directory della scheda SD
             val outputFile = File(sdCardDirectory, outputFileName)
 
             //if (ContextCompat.checkSelfPermission(this@PingActivity, android.Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                Log.d(MainActivity.TAG, "Requiring permission!")
+                //Log.d(MainActivity.TAG, "Requiring permission!")
             ActivityCompat.requestPermissions(
                 this@MainActivity,
                 arrayOf(android.Manifest.permission.WRITE_EXTERNAL_STORAGE),
@@ -277,15 +244,10 @@ class MainActivity : AppCompatActivity() {
     fun queryDatabase(dbHelper: EventManagerDbHelper, start: Long, end: Long): Deferred<Cursor?> = CoroutineScope(
         Dispatchers.IO).async {
         val db = dbHelper.readableDatabase
-        //val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.getDefault())
 
-        //val startString = dateFormat.format(Date(start))
-        //val endString = dateFormat.format(Date(end))
         val projection = arrayOf(BaseColumns._ID, EventManagerContract.SleepEvent.COLUMN_NAME_TIMESTAMP, EventManagerContract.SleepEvent.COLUMN_NAME_EVENT1)
         val selection = null
         val selectionArgs = null
-        //val selection = "${EventManagerContract.SleepEvent.COLUMN_NAME_TIMESTAMP} >= ? AND ${EventManagerContract.SleepEvent.COLUMN_NAME_TIMESTAMP} <= ?" // Filtra in modo che sia una data compresa tra ieri e oggi
-        //val selectionArgs = arrayOf(startString, endString)
         val sortOrder = "${EventManagerContract.SleepEvent.COLUMN_NAME_TIMESTAMP} ASC"
         return@async db.query(
             EventManagerContract.SleepEvent.TABLE_NAME1,
@@ -324,11 +286,11 @@ class MainActivity : AppCompatActivity() {
 
         // Calcola la deviazione standard ogni 5 minuti
         // ---------------------------------------------------------------------
-        val INTERVAL = 5 * 60 * 1000L; // 5 minuti in milli
+        val INTERVAL = 5 * 60 * 1000L // 5 minuti in milli
         val BASE_TIMESTAMP = sleep_event[0].timestamp
         var currentWindow = 0L
         var currentIndex = 0
-        Log.i(MainActivity.TAG, "BASE TIMESTAMP: $BASE_TIMESTAMP")
+        Log.i(TAG, "BASE TIMESTAMP: $BASE_TIMESTAMP")
         while (currentIndex < sleep_event.size) {
             val currentTimestamp = sleep_event[currentIndex].timestamp
             val currentValues = mutableListOf<Float>()
@@ -345,11 +307,7 @@ class MainActivity : AppCompatActivity() {
 
             // Calcola la deviazione standard per i valori raccolti
             //val stdDev = calculateStandardDeviation(currentValues)
-            /* QUESTI QUA A REGOLA NON SERVONO PIÙ
-            val y0 = SleepStageClassifier.calculateY0(currentValuesArray)
-            val y1 = SleepStageClassifier.calculateY1(currentValuesArray)
-            val y2 = SleepStageClassifier.calculateY2(y0, y1)
-            */
+
             val RRIntervals = SleepStageClassifier.calculateRRIntervals(currentValuesArray)
             // Convert RRIntervals to a double array
             val RRIntervalsArray = RRIntervals.toLongArray()
@@ -418,7 +376,6 @@ class MainActivity : AppCompatActivity() {
         var last_timestamp = 0L
         var lines = 0L
         var last_bpm = 0.0f
-        //val interval = 1000 * 2 // Intervallo di 2 secondi in millisecondi
 
         try {
             while (reader.readLine().also { line = it } != null) {
@@ -426,18 +383,18 @@ class MainActivity : AppCompatActivity() {
                     lines++
                     val dataParts = it.split(",") // Divide la linea in due parti
                     if (dataParts.size != 2) {
-                        throw Exception("bruh")
+                        throw Exception("dataParts size not 2!")
                     }
 
-                    val timestamp_grezzo = (dataParts[0].toFloat() * 1000f).toLong();
-                    val timestamp =  timestamp_grezzo + timestamp_base;
+                    val timestamp_grezzo = (dataParts[0].toFloat() * 1000f).toLong()
+                    val timestamp =  timestamp_grezzo + timestamp_base
                     val bpm = dataParts[1].toFloat() // Usa solo la parte dopo la virgola
 
                     if (timestamp_grezzo < 0.0f)
                         return@let
 
                     if (bpm.isNaN() or bpm.isInfinite())
-                        throw Exception("BRUH IN VIRGOLA MOBILE")
+                        throw Exception("Math error")
 
                     if (timestamp - last_timestamp < 2000L && last_timestamp != 0L)
                         return@let
@@ -464,14 +421,14 @@ class MainActivity : AppCompatActivity() {
 
                         // Formatta il timestamp
                         val formattedTimestamp = SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.getDefault()).format(Date(it.first))
-                        val grullo = it.first - last_timestamp
+                        val diff = it.first - last_timestamp
 
-                        Log.d("DatabaseTest", "Inserisco: $formattedTimestamp (${it.first}), BPM: $bpm, diff: $grullo")
+                        Log.d("DatabaseTest", "Inserisco: $formattedTimestamp (${it.first}), BPM: $bpm, diff: $diff")
 
                         // Inserisce il record nel database
                         val status = db.insert(EventManagerContract.SleepEvent.TABLE_NAME1, null, values)
                         if (status == -1L)
-                            throw Exception("BRUH DB")
+                            throw Exception("DB ERROR")
                     }
 
                     last_timestamp = timestamp
@@ -483,7 +440,6 @@ class MainActivity : AppCompatActivity() {
         } finally {
             reader.close()
             db.close()
-            Log.i(MainActivity.TAG, "LETTE $lines LINEE DI MERDA")
         }
     }
 

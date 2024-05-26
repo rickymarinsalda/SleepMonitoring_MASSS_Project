@@ -1,8 +1,5 @@
 package com.unipi.sleepmonitoring_masss_library
 
-import ai.onnxruntime.OnnxTensor
-import ai.onnxruntime.OrtEnvironment
-import ai.onnxruntime.OrtSession
 import android.content.Context
 import android.content.res.AssetFileDescriptor
 import android.util.Log
@@ -60,8 +57,6 @@ class ClassifierML(private val context: Context) : Classifier {
         val output = Array(1) { FloatArray(4) }
         tflite.run(input, output)
 
-        Log.i("MODELLOTFLITEBRUH", "Ran inference on ${output[0][0]}, ${output[0][1]}, ${output[0][2]}")
-
         val maxV = max(output[0][0], max(output[0][1], max(output[0][2], output[0][3])))
 
         if (output[0][0] >= maxV)
@@ -73,8 +68,7 @@ class ClassifierML(private val context: Context) : Classifier {
         if (output[0][3] >= maxV)
             return 3
 
-        // bruh
-        throw Exception("NO MA CHE DIAVOLO COM'È POSSIBILE")
+        throw Exception("Max is not Maxxing")
     }
 }
 
@@ -200,67 +194,4 @@ class ClassifierStatistical() : Classifier {
 
 }
 
-class ClassifierRandomForest(private val context: Context) : Classifier {
-
-    private var session: OrtSession
-    private var env: OrtEnvironment
-
-    init {
-        // Initialize ONNX Runtime
-        env = OrtEnvironment.getEnvironment()
-        session = env.createSession(context.filesDir.absolutePath + "/random_forest_sleep_classifier_80t.onnx")
-    }
-    override fun doInference(input: Array<FloatArray>): Int {
-
-        assert(input.size == 4)
-        for (floats in input) {
-            assert(floats.size == 5)
-        }
-
-        // Normalize bpms
-        for (i in input[0].indices)
-            input[0][i] = (input[0][i] - 50)/105
-
-        val output = Array(1) { FloatArray(4) }
-
-        // Create input tensor
-        val inputTensor = OnnxTensor.createTensor(env, input)
-
-        // Run the model
-        val result = session.run(mapOf("input" to inputTensor))
-
-        // Extract the prediction results
-        val prediction = result[0].value as Array<FloatArray>
-
-        // Cleanup
-        inputTensor.close()
-
-
-        // Use the prediction result
-        println(prediction.contentDeepToString())
-
-        Log.i("MODELLOTFLITEBRUH", "Ran inference on ${output[0][0]}, ${output[0][1]}, ${output[0][2]}")
-
-        val maxV = max(output[0][0], max(output[0][1], max(output[0][2], output[0][3])))
-
-        if (output[0][0] >= maxV)
-            return 0
-        if (output[0][1] >= maxV)
-            return 1
-        if (output[0][2] >= maxV)
-            return 2
-        if (output[0][3] >= maxV)
-            return 3
-
-        // bruh
-        throw Exception("NO MA CHE DIAVOLO COM'È POSSIBILE")
-
-
-    }
-
-    private fun onDestory() {
-        session.close()
-        env.close()
-    }
-}
 

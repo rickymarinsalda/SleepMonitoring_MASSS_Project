@@ -1,10 +1,7 @@
 package com.unipi.sleepmonitoringproject
 
 import android.annotation.SuppressLint
-import android.app.ActivityManager
-import android.content.Context
 import android.content.Intent
-import android.util.Log
 import com.google.android.gms.wearable.DataEventBuffer
 import com.google.android.gms.wearable.DataMapItem
 import com.google.android.gms.wearable.Wearable
@@ -21,9 +18,6 @@ class DataLayerListenerService : WearableListenerService() {
     @SuppressLint("VisibleForTests")
     override fun onDataChanged(dataEvents: DataEventBuffer) {
        super.onDataChanged(dataEvents)
-
-
-        Log.i("DATA", "BBBB")
 
         // Quando ricevi l'evento onDataChanged, invia il broadcast
 

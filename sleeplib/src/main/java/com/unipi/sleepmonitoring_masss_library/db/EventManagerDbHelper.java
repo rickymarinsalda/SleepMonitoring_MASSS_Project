@@ -1,13 +1,8 @@
 package com.unipi.sleepmonitoring_masss_library.db;
 
-import android.content.ContentValues;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-
-import com.unipi.sleepmonitoring_masss_library.TimeSeries;
-
-import java.util.HashMap;
 
 public class EventManagerDbHelper extends SQLiteOpenHelper {
     // If we change the database schema, we must increment the database version.

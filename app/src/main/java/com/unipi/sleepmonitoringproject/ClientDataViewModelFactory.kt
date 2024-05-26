@@ -1,6 +1,5 @@
 package com.unipi.sleepmonitoringproject
 
-import android.database.sqlite.SQLiteDatabase
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.unipi.sleepmonitoringproject.db.EventManagerDbHelper

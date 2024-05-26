@@ -15,22 +15,7 @@ fun insertIntoDB(db: SQLiteDatabase, series: TimeSeries) {
             var hiv = ContentValues()
             hiv.put("timestamp", datum.timestamp)
             hiv.put("bpm", datum.datum[0])
-            /*// Crea un nuovo record
-            val values = ContentValues().apply {
-                put(EventManagerContract.SleepEvent.COLUMN_NAME_TIMESTAMP, it.first)
-                put(EventManagerContract.SleepEvent.COLUMN_NAME_EVENT1, it.second)
-            }
 
-            // Formatta il timestamp
-            val formattedTimestamp = SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.getDefault()).format(Date(it.first))
-            val grullo = it.first - last_timestamp
-
-            Log.d("DatabaseTest", "Inserisco: $formattedTimestamp (${it.first}), BPM: $bpm, diff: $grullo")
-
-            // Inserisce il record nel database
-            val status = db.insert(EventManagerContract.SleepEvent.TABLE_NAME1, null, values)
-            if (status == -1L)
-                throw Exception("BRUH DB")*/
             var ret = db.insert("HeartRate", null, hiv)
             if (ret == -1L) throw RuntimeException("HEART RATE FALLITO INSERIMENTO BRUH³")
 
