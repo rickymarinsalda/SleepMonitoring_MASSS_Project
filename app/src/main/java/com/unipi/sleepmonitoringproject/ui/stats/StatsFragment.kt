@@ -17,8 +17,8 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.unipi.sleepmonitoringproject.R
 import com.unipi.sleepmonitoringproject.databinding.FragmentStatsBinding
-import com.unipi.sleepmonitoringproject.stats.SleepBarChart
-import com.unipi.sleepmonitoringproject.stats.SleepPieChart
+import com.unipi.sleepmonitoringproject.charts.SleepBarChart
+import com.unipi.sleepmonitoringproject.charts.SleepPieChart
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import kotlin.math.roundToInt
@@ -60,7 +60,6 @@ class StatsFragment : Fragment() {
         return root
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
     private fun showLastNight() {
 
         val constraintLayout: ConstraintLayout = barChartLayout.findViewById(R.id.bar_chart_parent)

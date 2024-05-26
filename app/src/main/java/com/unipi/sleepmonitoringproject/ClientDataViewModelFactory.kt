@@ -2,7 +2,7 @@ package com.unipi.sleepmonitoringproject
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.unipi.sleepmonitoringproject.db.EventManagerDbHelper
+import com.unipi.sleepmonitoring_masss_library.db.EventManagerDbHelper
 
 class ClientDataViewModelFactory(private val dbHelper: EventManagerDbHelper) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
