@@ -31,10 +31,12 @@ import androidx.lifecycle.lifecycleScope
 import com.google.android.gms.wearable.CapabilityClient
 import com.google.android.gms.wearable.PutDataMapRequest
 import com.google.android.gms.wearable.Wearable
+import com.unipi.sleepmonitoring_masss_library.FileLoader
 import com.unipi.sleepmonitoringproject.algorithm_1.SleepStageClassifier
 import com.unipi.sleepmonitoringproject.databinding.ActivityMainBinding
 import com.unipi.sleepmonitoring_masss_library.db.EventManagerDbHelper
 import com.unipi.sleepmonitoring_masss_library.db.EventManagerContract
+import com.unipi.sleepmonitoring_masss_library.db.insertIntoDB
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
