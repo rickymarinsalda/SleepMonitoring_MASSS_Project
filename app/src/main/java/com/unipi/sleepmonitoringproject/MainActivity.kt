@@ -11,7 +11,6 @@ import android.os.Bundle
 import android.os.Environment
 import android.provider.BaseColumns
 import android.util.Log
-import android.view.Menu
 import androidx.activity.viewModels
 import androidx.annotation.RequiresApi
 import com.google.android.material.snackbar.Snackbar
@@ -477,13 +476,6 @@ class MainActivity : AppCompatActivity() {
     }
 
 // --------------------- FINE CODICE IMPORTATO DA PING APP --------------------------
-
-
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        menuInflater.inflate(R.menu.main, menu)
-        return true
-    }
 
     override fun onSupportNavigateUp(): Boolean {
         val navController = findNavController(R.id.nav_host_fragment_content_main)
