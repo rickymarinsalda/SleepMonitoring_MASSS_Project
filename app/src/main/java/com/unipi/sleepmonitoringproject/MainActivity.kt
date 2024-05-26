@@ -31,11 +31,13 @@ import androidx.lifecycle.lifecycleScope
 import com.google.android.gms.wearable.CapabilityClient
 import com.google.android.gms.wearable.PutDataMapRequest
 import com.google.android.gms.wearable.Wearable
+import com.unipi.sleepmonitoring_masss_library.FileLoader
 import com.unipi.sleepmonitoring_masss_library.TimeSeries
 import com.unipi.sleepmonitoringproject.algorithm_1.SleepStageClassifier
 import com.unipi.sleepmonitoringproject.databinding.ActivityMainBinding
-import com.unipi.sleepmonitoringproject.db.EventManagerContract
-import com.unipi.sleepmonitoringproject.db.EventManagerDbHelper
+import com.unipi.sleepmonitoring_masss_library.db.EventManagerDbHelper
+import com.unipi.sleepmonitoring_masss_library.db.EventManagerContract
+import com.unipi.sleepmonitoring_masss_library.db.insertIntoDB
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
@@ -66,6 +68,7 @@ class MainActivity : AppCompatActivity() {
     private val messageClient by lazy { Wearable.getMessageClient(this) }
     private val capabilityClient by lazy { Wearable.getCapabilityClient(this) }
 
+    private val sharedViewModel: SharedViewModel by viewModels()
     private val clientDataViewModel: ClientDataViewModel by viewModels {
         ClientDataViewModelFactory(dbHelper)
     }
@@ -106,7 +109,7 @@ class MainActivity : AppCompatActivity() {
 
 
         dbHelper = EventManagerDbHelper(this) // inizializzo db
-
+        sharedViewModel.dbHelper = dbHelper
         //clearDatabase(dbHelper) // PULISCE IL DB
         //insertHeartRateDataFromFile(this, "8692923_heartrate.txt") // AGGIUNGE AL DB ROBA DA FILE IN /ASSETS
         //insertHeartRateDataFromFile(this, "9618981_heartrate.txt") // AGGIUNGE AL DB ROBA DA FILE IN /ASSETS
@@ -117,6 +120,11 @@ class MainActivity : AppCompatActivity() {
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        val fileLoader = FileLoader(binding.root.context, "8692923_heartrate.txt", "8692923_acceleration.txt")
+        val newTime = fileLoader.loadData()
+
+        insertIntoDB(dbHelper.writableDatabase, newTime)
 
         setSupportActionBar(binding.appBarMain.toolbar)
 
@@ -138,7 +146,7 @@ class MainActivity : AppCompatActivity() {
         // menu should be considered as top level destinations.
         appBarConfiguration = AppBarConfiguration(
             setOf(
-                R.id.nav_home, R.id.nav_stats, R.id.nav_slideshow
+                R.id.nav_home, R.id.nav_stats
             ), drawerLayout
         )
         setupActionBarWithNavController(navController, appBarConfiguration)

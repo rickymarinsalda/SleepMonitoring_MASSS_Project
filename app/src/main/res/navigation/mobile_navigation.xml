@@ -18,12 +18,6 @@
         tools:layout="@layout/fragment_stats" />
 
     <fragment
-        android:id="@+id/nav_slideshow"
-        android:name="com.unipi.sleepmonitoringproject.ui.slideshow.SlideshowFragment"
-        android:label="@string/menu_slideshow"
-        tools:layout="@layout/fragment_slideshow" />
-
-    <fragment
         android:id="@+id/recordingFragment"
         android:name="com.unipi.sleepmonitoringproject.ui.home.RecordingFragment"
         android:label="recording"

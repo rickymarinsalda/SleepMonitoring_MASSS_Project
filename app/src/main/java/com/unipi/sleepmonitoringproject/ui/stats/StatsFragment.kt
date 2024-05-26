@@ -17,8 +17,8 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.unipi.sleepmonitoringproject.R
 import com.unipi.sleepmonitoringproject.databinding.FragmentStatsBinding
-import com.unipi.sleepmonitoringproject.stats.SleepBarChart
-import com.unipi.sleepmonitoringproject.stats.SleepPieChart
+import com.unipi.sleepmonitoringproject.charts.SleepBarChart
+import com.unipi.sleepmonitoringproject.charts.SleepPieChart
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import kotlin.math.roundToInt
@@ -61,7 +61,6 @@ class StatsFragment : Fragment() {
         return root
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
     private fun showLastNight() {
 
         val constraintLayout: ConstraintLayout = barChartLayout.findViewById(R.id.bar_chart_parent)
@@ -129,32 +128,11 @@ class StatsFragment : Fragment() {
             constraintSet.setVerticalBias(currentDateTextView.id, 0.4f)
             constraintSet.applyTo(constraintLayout)
 
-            /* Creation of the sleep line chart */
-            //val lineChart = SleepLineChart(root)
-            //val barChart = SleepBarChart(root)
-
-            /* Set sleep informations views as visible */
-            val sleepInfoLayout: LinearLayout = barChartLayout.findViewById(R.id.bar_sleep_info_layout)
-            sleepInfoLayout.visibility = View.VISIBLE
-
-            /* Total time in bed */
-            val startTime = barChart.getStartTime().timeInMillis
-            val endTime = barChart.getEndTime().timeInMillis
-            val totTime = (endTime - startTime)/3600000.0
-            val totTimeTextView: TextView = barChartLayout.findViewById(R.id.bar_time_in_bed)
-            totTimeTextView.text = getString(R.string.time_asleep, totTime)
-
-            /* Time to fall asleep */
-            val startTimeAsleep = barChart.getStartTimeAsleep()
-            val differenceInMillis = startTimeAsleep - startTime
-            val totTimeToFallAsleep = ((differenceInMillis / (1000.0 * 60.0)) * 10.0).roundToInt() / 10.0
-            val timeToFallAsleepTextView: TextView = barChartLayout.findViewById(R.id.bar_time_to_fall_asleep)
-            timeToFallAsleepTextView.text = getString(R.string.to_fall_asleep, totTimeToFallAsleep)
-
             // Assuming there is a container or a placeholder in fragment_stats.xml to add the bar chart.
             //binding.barChartContainer.addView(barChart)
             binding.barChartContainer.addView(barChartLayout)
             //binding.barChartContainer.addView(otherLayout)
+
             /* Creation of the pie chart */
             SleepPieChart(root)
         }

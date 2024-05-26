@@ -16,8 +16,7 @@ import com.google.android.gms.wearable.MessageEvent
 import com.google.android.gms.wearable.PutDataMapRequest
 import com.unipi.sleepmonitoring_masss_library.TimeSeries
 import com.unipi.sleepmonitoring_masss_library.db.insertIntoDB
-import com.unipi.sleepmonitoringproject.db.EventManagerContract
-import com.unipi.sleepmonitoringproject.db.EventManagerDbHelper
+import com.unipi.sleepmonitoring_masss_library.db.EventManagerDbHelper
 import java.text.SimpleDateFormat
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
